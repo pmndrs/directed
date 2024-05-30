@@ -210,4 +210,18 @@ describe('Scheduler', () => {
 
         expect(order).toEqual(['B', 'A', 'C']);
     });
+
+    test.fails('scheduling the same runnable multiple times does not run it multiple times', () => {
+        const schedule = create();
+
+        add(schedule, aFn, id('A'));
+        add(schedule, aFn, id('A'));
+        add(schedule, aFn, id('A'));
+
+        run(schedule, {});
+
+        expect(aFn).toBeCalledTimes(1);
+
+        expect(order).toEqual(['A']);
+    });
 });
