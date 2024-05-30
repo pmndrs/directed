@@ -24,21 +24,6 @@ export class Scheduler {
     }
 
     add(runnable: Runnable<any>, options?: OptionsObject): Scheduler {
-        // If there are tags, check if they exist, otherwise create them.
-        if (options?.tag) {
-            if (Array.isArray(options.tag)) {
-                options.tag.forEach((tag) => {
-                    if (!this.tags.has(tag)) {
-                        createTag(this, tag);
-                    }
-                });
-            } else {
-                if (!this.tags.has(options.tag)) {
-                    createTag(this, options.tag);
-                }
-            }
-        }
-
         const optionsFns = createOptionsFns(options);
         add(this, runnable, ...optionsFns);
 

@@ -101,6 +101,8 @@ describe('Scheduler Class', () => {
         const group1 = Symbol();
         const schedule = new Scheduler();
 
+        schedule.createTag(group1);
+
         schedule.add(aFn, { id: 'A', tag: group1 });
         schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
 
@@ -115,6 +117,8 @@ describe('Scheduler Class', () => {
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
         const schedule = new Scheduler();
+
+        schedule.createTag(group1);
 
         schedule.add(aFn, { id: 'A', tag: group1 });
         schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
@@ -134,6 +138,8 @@ describe('Scheduler Class', () => {
     test('schedule a runnable into an existing tag', () => {
         const group1 = Symbol();
         const schedule = new Scheduler();
+
+        schedule.createTag(group1);
 
         schedule.add(aFn, { id: 'A', tag: group1 });
         schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
