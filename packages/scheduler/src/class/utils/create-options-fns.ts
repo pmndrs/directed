@@ -7,7 +7,9 @@ import {
 import { OptionsFn } from '../../scheduler-types';
 import { OptionsObject } from '../types';
 
-export function createOptionsFns(options: OptionsObject | undefined) {
+export function createOptionsFns<
+    T extends Scheduler.Context = Scheduler.Context
+>(options: OptionsObject | undefined): OptionsFn<T>[] {
     const optionsFns: OptionsFn[] = [];
 
     if (options?.id) {
@@ -39,5 +41,5 @@ export function createOptionsFns(options: OptionsObject | undefined) {
             optionsFns.push(tagFn(options.tag));
         }
     }
-    return optionsFns;
+    return optionsFns as OptionsFn<T>[];
 }
