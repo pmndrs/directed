@@ -35,17 +35,6 @@ export class Scheduler {
         return this;
     }
 
-    createTag(id: symbol | string, options?: OptionsObject): Scheduler {
-        const optionsFns = createOptionsFns(options);
-        createTag(this, id, ...optionsFns);
-        return this;
-    }
-
-    removeTag(id: symbol | string): Scheduler {
-        removeTag(this, id);
-        return this;
-    }
-
     build(): Scheduler {
         build(this);
         return this;
@@ -59,5 +48,24 @@ export class Scheduler {
     debug(): Scheduler {
         debug(this);
         return this;
+    }
+
+    createTag(id: symbol | string, options?: OptionsObject): Scheduler {
+        const optionsFns = createOptionsFns(options);
+        createTag(this, id, ...optionsFns);
+        return this;
+    }
+
+    removeTag(id: symbol | string): Scheduler {
+        removeTag(this, id);
+        return this;
+    }
+
+    hasTag(id: symbol | string): boolean {
+        return this.tags.has(id);
+    }
+
+    getRunnable(id: symbol | string): Runnable<any> | undefined {
+        return this.symbols.get(id);
     }
 }
