@@ -1,0 +1,17 @@
+{
+  "name": "directed",
+  "private": true,
+  "version": "0.0.1-alpha.1",
+  "type": "module",
+  "license": "MIT",
+  "main": "packages/scheduler/src/index.ts",
+  "module": "packages/scheduler/src/index.ts",
+  "types": "packages/scheduler/src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./packages/scheduler/src/index.ts",
+      "require": "./packages/scheduler/src/index.ts",
+      "types": "./packages/scheduler/src/index.ts"
+    }
+  }
+}

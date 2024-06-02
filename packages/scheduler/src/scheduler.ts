@@ -181,7 +181,10 @@ export function create<
  * @param {Schedule} schedule - The schedule containing the runnables to execute.
  * @param {Context} context - The context to be passed to each runnable.
  */
-export function run(schedule: Schedule, context: Scheduler.Context) {
+export function run<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    context: T
+) {
     for (let i = 0; i < schedule.dag.sorted.length; i++) {
         const runnable = schedule.dag.sorted[i];
         runnable(context);
@@ -195,7 +198,10 @@ export function run(schedule: Schedule, context: Scheduler.Context) {
  * @param {symbol | string} id - The ID of the tag to remove.
  * @return {void} This function does not return anything.
  */
-export function removeTag(schedule: Schedule, id: symbol | string) {
+export function removeTag<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {
     const tag = schedule.tags.get(id);
 
     if (!tag) {
@@ -215,7 +221,10 @@ export function removeTag(schedule: Schedule, id: symbol | string) {
  * @param {symbol | string} id - The ID of the tag to check.
  * @return {boolean} Returns true if the tag exists, false otherwise.
  */
-export function hasTag(schedule: Schedule, id: symbol | string) {
+export function hasTag<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {
     return schedule.tags.has(id);
 }
 
@@ -228,12 +237,12 @@ export function hasTag(schedule: Schedule, id: symbol | string) {
  * @param {...OptionsFn[]} options - Additional options to customize the tag.
  * @return {Tag} The newly created tag.
  */
-export function createTag(
-    schedule: Schedule,
+export function createTag<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
     id: symbol | string,
-    ...options: OptionsFn[]
+    ...options: OptionsFn<T>[]
 ): Tag {
-    if (hasTag(schedule, id)) {
+    if (hasTag<T>(schedule, id)) {
         throw new Error(`Tag with id ${String(id)} already exists`);
     }
 
@@ -256,7 +265,7 @@ export function createTag(
 
     const tag = { id, before, after };
 
-    const optionParams: Options = {
+    const optionParams: Options<T> = {
         dag: schedule.dag,
         tag,
         schedule,
@@ -281,10 +290,10 @@ export function createTag(
  * @throws {Error} If the runnable already exists in the schedule.
  * @return {void}
  */
-export function add(
-    schedule: Schedule,
-    runnable: Runnable,
-    ...options: OptionsFn[]
+export function add<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    runnable: Runnable<T>,
+    ...options: OptionsFn<T>[]
 ) {
     if (schedule.dag.exists(runnable)) {
         throw new Error('Runnable already exists in schedule');
@@ -293,7 +302,7 @@ export function add(
     // add the runnable to the graph
     schedule.dag.addVertex(runnable, {});
 
-    const optionParams: Options = {
+    const optionParams: Options<T> = {
         dag: schedule.dag,
         runnable,
         schedule,
@@ -314,7 +323,9 @@ export function add(
  * @param {Schedule} schedule - The schedule to be built.
  * @return {void} This function does not return anything.
  */
-export function build(schedule: Schedule) {
+export function build<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>
+) {
     schedule.dag.topSort();
 }
 
@@ -325,7 +336,10 @@ export function build(schedule: Schedule) {
  * @param {Runnable} runnable - The runnable to remove from the schedule.
  * @return {void} This function does not return anything.
  */
-export function remove(schedule: Schedule, runnable: Runnable) {
+export function remove<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    runnable: Runnable<T>
+) {
     schedule.dag.removeVertex(runnable);
 }
 
@@ -336,7 +350,10 @@ export function remove(schedule: Schedule, runnable: Runnable) {
  * @param {symbol | string} id - The ID of the runnable to retrieve.
  * @return {Runnable | undefined} The retrieved runnable or undefined if not found.
  */
-export function getRunnable(schedule: Schedule, id: symbol | string) {
+export function getRunnable<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {
     return schedule.symbols.get(id);
 }
 
@@ -347,7 +364,10 @@ export function getRunnable(schedule: Schedule, id: symbol | string) {
  * @param {symbol | string} id - The ID of the tag to retrieve.
  * @return {Tag | undefined} The retrieved tag or undefined if not found.
  */
-export function getTag(schedule: Schedule, id: symbol | string) {
+export function getTag<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {
     return schedule.tags.get(id);
 }
 
@@ -357,6 +377,8 @@ export function getTag(schedule: Schedule, id: symbol | string) {
  * @param {Schedule} schedule - The schedule containing the DAG to visualize.
  * @return {void} This function does not return anything.
  */
-export function debug(schedule: Schedule) {
+export function debug<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>
+) {
     schedule.dag.asciiVisualize();
 }
