@@ -3,10 +3,7 @@
 > [!CAUTION]
 > This is library is in pre-release and its API may change. Until it enters RC, it can only be installed via GitHub.
 
-> [!IMPORTANT]
-> The React API is in the works.
-
-Directed is a flexible, minimal scheduler written in TypeScript for React and vanilla. It is powered by a directed acyclic graph (DAG) allowing for dependency-based scheduling.
+Directed is a flexible, minimal scheduler written in TypeScript. It is powered by a directed acyclic graph (DAG) allowing for dependency-based scheduling.
 
 ```
 npm install pmndrs/directed#v0.0.1-alpha.1
@@ -18,16 +15,16 @@ Directed supports a functional and class API depending on what is comfy for you.
 
 ### Class API
 ```js
-import { Scheduler } from 'directed'
+import { Schedule } from 'directed'
 
 const applyGravity = (state) => {}
 const moveBody = (state) => {}
 
-const scheduler = new Scheduler()
-scheduler.add(moveBody)
-scheduler.add(applyGravity, { before: moveBody })
+const schedule = new Schedule()
+schedule.add(moveBody)
+schedule.add(applyGravity, { before: moveBody })
 
-scheduler.run(state)
+schedule.run(state)
 ```
 
 ### Functional API
@@ -52,9 +49,9 @@ One solution is to arrange updates by a priority number. But this quickly gets b
 The most flexible solution is to instead tell the scheduler the dependencies for each update and let it solve for the correct order for us. Any new insertions will respect the already defined dependencies.
 
 ```js
-scheduler.add(A)
-scheduler.add(B, { before: A, after: C })
-scheduler.add(C, { before: B })
+schedule.add(A)
+schedule.add(B, { before: A, after: C })
+schedule.add(C, { before: B })
 // Executes with the order C -> B -> A
 ```
 
