@@ -9,7 +9,7 @@ import { OptionsObject } from '../types';
 
 export function createOptionsFns<
     T extends Scheduler.Context = Scheduler.Context
->(options: OptionsObject | undefined): OptionsFn<T>[] {
+>(options: OptionsObject<any> | undefined): OptionsFn<T>[] {
     const optionsFns: OptionsFn[] = [];
 
     if (options?.id) {

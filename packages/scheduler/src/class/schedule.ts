@@ -23,7 +23,7 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         this.symbols = new Map<symbol | string, Runnable<T>>();
     }
 
-    add(runnable: Runnable<T>, options?: OptionsObject): Schedule<T> {
+    add(runnable: Runnable<T>, options?: OptionsObject<T>): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         add(this, runnable, ...optionsFns);
 
@@ -50,7 +50,7 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         return this;
     }
 
-    createTag(id: symbol | string, options?: OptionsObject): Schedule<T> {
+    createTag(id: symbol | string, options?: OptionsObject<T>): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         createTag(this, id, ...optionsFns);
         return this;
