@@ -1,2 +1,2 @@
 export * from './scheduler';
-export { Scheduler } from './class/scheduler';
+export { Schedule } from './class/schedule';

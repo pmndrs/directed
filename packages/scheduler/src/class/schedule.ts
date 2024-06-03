@@ -12,7 +12,7 @@ import type { Runnable, Tag } from '../scheduler-types';
 import type { OptionsObject } from './types';
 import { createOptionsFns } from './utils/create-options-fns';
 
-export class Scheduler<T extends Scheduler.Context = Scheduler.Context> {
+export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
     dag: DirectedGraph<Runnable<T>>;
     tags: Map<symbol | string, Tag<any>>;
     symbols: Map<symbol | string, Runnable<T>>;
@@ -23,40 +23,40 @@ export class Scheduler<T extends Scheduler.Context = Scheduler.Context> {
         this.symbols = new Map<symbol | string, Runnable<T>>();
     }
 
-    add(runnable: Runnable<T>, options?: OptionsObject): Scheduler<T> {
+    add(runnable: Runnable<T>, options?: OptionsObject): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         add(this, runnable, ...optionsFns);
 
         return this;
     }
 
-    run(context: T): Scheduler<T> {
+    run(context: T): Schedule<T> {
         run(this, context);
         return this;
     }
 
-    build(): Scheduler<T> {
+    build(): Schedule<T> {
         build(this);
         return this;
     }
 
-    remove(runnable: Runnable): Scheduler<T> {
+    remove(runnable: Runnable): Schedule<T> {
         remove(this, runnable);
         return this;
     }
 
-    debug(): Scheduler<T> {
+    debug(): Schedule<T> {
         debug(this);
         return this;
     }
 
-    createTag(id: symbol | string, options?: OptionsObject): Scheduler<T> {
+    createTag(id: symbol | string, options?: OptionsObject): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         createTag(this, id, ...optionsFns);
         return this;
     }
 
-    removeTag(id: symbol | string): Scheduler<T> {
+    removeTag(id: symbol | string): Schedule<T> {
         removeTag(this, id);
         return this;
     }

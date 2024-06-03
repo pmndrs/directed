@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Scheduler } from './scheduler';
+import { Schedule } from './schedule';
 
-describe('Scheduler Class', () => {
+describe('Schedule Class', () => {
     let order: string[] = [];
 
     const aFn = vi.fn(() => {
@@ -40,7 +40,7 @@ describe('Scheduler Class', () => {
     });
 
     test('scheduler with a single runnable', () => {
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.add(aFn, { id: 'A' });
 
@@ -52,7 +52,7 @@ describe('Scheduler Class', () => {
     });
 
     test('schedule a runnable with before', () => {
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.add(aFn, { id: 'A' });
         schedule.add(bFn, { id: 'B', before: 'A' });
@@ -66,7 +66,7 @@ describe('Scheduler Class', () => {
     });
 
     test('schedule a runnable with after', () => {
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.add(aFn, { id: 'A' });
         schedule.add(bFn, { id: 'B', after: 'A' });
@@ -80,7 +80,7 @@ describe('Scheduler Class', () => {
     });
 
     test('schedule a runnable after multiple runnables', () => {
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.add(aFn, { id: 'A' });
         schedule.add(bFn, { id: 'B' });
@@ -99,7 +99,7 @@ describe('Scheduler Class', () => {
 
     test('schedule a runnable with tag', () => {
         const group1 = Symbol();
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.createTag(group1);
 
@@ -116,7 +116,7 @@ describe('Scheduler Class', () => {
 
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.createTag(group1);
 
@@ -137,7 +137,7 @@ describe('Scheduler Class', () => {
 
     test('schedule a runnable into an existing tag', () => {
         const group1 = Symbol();
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.createTag(group1);
 
@@ -165,7 +165,7 @@ describe('Scheduler Class', () => {
         const group2 = Symbol();
         const group3 = Symbol();
 
-        const schedule = new Scheduler();
+        const schedule = new Schedule();
 
         schedule.createTag(group1);
         schedule.createTag(group2, { before: group1 });
