@@ -1,14 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import {
-    add,
-    after,
-    before,
-    id,
-    create,
-    createTag,
-    run,
-    tag,
-} from '../scheduler';
+import { add, after, before, id, create, run, tag } from '../scheduler';
 
 describe('Scheduler', () => {
     let order: string[] = [];
@@ -110,8 +101,6 @@ describe('Scheduler', () => {
         const group1 = Symbol();
         const schedule = create();
 
-        createTag(schedule, group1);
-
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
 
@@ -126,8 +115,6 @@ describe('Scheduler', () => {
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
         const schedule = create();
-
-        createTag(schedule, group1);
 
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
@@ -147,8 +134,6 @@ describe('Scheduler', () => {
     test('schedule a runnable into an existing tag', () => {
         const group1 = Symbol();
         const schedule = create();
-
-        createTag(schedule, group1);
 
         add(schedule, aFn, id('A'), tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
@@ -194,13 +179,9 @@ describe('Scheduler', () => {
 
         const schedule = create();
 
-        createTag(schedule, group1);
-        createTag(schedule, group2, before(group1));
-        createTag(schedule, group3, after(group1));
-
         add(schedule, aFn, tag(group1), id('A'));
-        add(schedule, bFn, tag(group2), id('B'));
-        add(schedule, cFn, tag(group3), id('C'));
+        add(schedule, bFn, tag(group2), id('B'), before(group1));
+        add(schedule, cFn, tag(group3), id('C'), after(group1));
 
         run(schedule, {});
 
@@ -211,17 +192,20 @@ describe('Scheduler', () => {
         expect(order).toEqual(['B', 'A', 'C']);
     });
 
-    test.fails('scheduling the same runnable multiple times does not run it multiple times', () => {
-        const schedule = create();
+    test.fails(
+        'scheduling the same runnable multiple times does not run it multiple times',
+        () => {
+            const schedule = create();
 
-        add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
 
-        run(schedule, {});
+            run(schedule, {});
 
-        expect(aFn).toBeCalledTimes(1);
+            expect(aFn).toBeCalledTimes(1);
 
-        expect(order).toEqual(['A']);
-    });
+            expect(order).toEqual(['A']);
+        }
+    );
 });

@@ -148,8 +148,9 @@ export function tag(id: symbol | string): OptionsFn {
         // apply the tag
         let tag = getTag(schedule, id);
 
+        // create the tag if it doesn't exist
         if (!tag) {
-            throw new Error(`Could not find tag with id ${String(id)}`);
+            tag = createTag(schedule, id);
         }
 
         dag.addEdge(tag.before, runnable);
