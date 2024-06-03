@@ -30,8 +30,8 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         return this;
     }
 
-    run(context: T): Schedule<T> {
-        run(this, context);
+    async run(context: T): Promise<Schedule<T>> {
+        await run(this, context);
         return this;
     }
 

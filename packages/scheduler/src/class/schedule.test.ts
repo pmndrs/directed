@@ -183,4 +183,34 @@ describe('Schedule Class', () => {
 
         expect(order).toEqual(['B', 'A', 'C']);
     });
+
+    test('scheduling async runnables', async () => {
+        const schedule = new Schedule();
+
+        const aFn = async () => {
+            order.push('A');
+        };
+
+        const bFn = async () => {
+            // Don't resolve until the next tick
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    order.push('B');
+                    resolve();
+                }, 100);
+            });
+        };
+
+        const cFn = () => {
+            order.push('C');
+        };
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { after: 'A', id: 'B' });
+        schedule.add(cFn, { after: 'B', id: 'C' });
+
+        await schedule.run({});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+    });
 });

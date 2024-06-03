@@ -181,13 +181,16 @@ export function create<
  * @param {Schedule} schedule - The schedule containing the runnables to execute.
  * @param {Context} context - The context to be passed to each runnable.
  */
-export function run<T extends Scheduler.Context = Scheduler.Context>(
+export async function run<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
     context: T
 ) {
     for (let i = 0; i < schedule.dag.sorted.length; i++) {
         const runnable = schedule.dag.sorted[i];
-        runnable(context);
+        const result = runnable(context);
+        if (result instanceof Promise) {
+            await result;
+        }
     }
 }
 
