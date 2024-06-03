@@ -8,7 +8,7 @@ declare global {
 
 export type Runnable<T extends Scheduler.Context = Scheduler.Context> = (
     context: T
-) => void;
+) => void | Promise<any>;
 
 export interface Schedule<T extends Scheduler.Context = Scheduler.Context> {
     dag: DirectedGraph<Runnable<T>>;

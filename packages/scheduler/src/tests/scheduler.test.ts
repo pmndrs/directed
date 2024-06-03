@@ -211,17 +211,50 @@ describe('Scheduler', () => {
         expect(order).toEqual(['B', 'A', 'C']);
     });
 
-    test.fails('scheduling the same runnable multiple times does not run it multiple times', () => {
+    test.fails(
+        'scheduling the same runnable multiple times does not run it multiple times',
+        () => {
+            const schedule = create();
+
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+
+            run(schedule, {});
+
+            expect(aFn).toBeCalledTimes(1);
+
+            expect(order).toEqual(['A']);
+        }
+    );
+
+    test('scheduling async runnables', async () => {
         const schedule = create();
 
-        add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
+        const aFn = async () => {
+            order.push('A');
+        };
 
-        run(schedule, {});
+        const bFn = async () => {
+            // Don't resolve until the next tick
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    order.push('B');
+                    resolve();
+                }, 100);
+            });
+        };
 
-        expect(aFn).toBeCalledTimes(1);
+        const cFn = () => {
+            order.push('C');
+        };
 
-        expect(order).toEqual(['A']);
+        add(schedule, aFn, id('A'));
+        add(schedule, bFn, after('A'), id('B'));
+        add(schedule, cFn, after('B'), id('C'));
+
+        await run(schedule, {});
+
+        expect(order).toEqual(['A', 'B', 'C']);
     });
 });
