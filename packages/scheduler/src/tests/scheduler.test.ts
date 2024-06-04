@@ -8,6 +8,8 @@ import {
     createTag,
     run,
     tag,
+    remove,
+    build,
 } from '../scheduler';
 
 describe('Scheduler', () => {
@@ -256,5 +258,25 @@ describe('Scheduler', () => {
         await run(schedule, {});
 
         expect(order).toEqual(['A', 'B', 'C']);
+    });
+
+    test('remove runnables from the schedule', () => {
+        const schedule = create();
+
+        add(schedule, aFn, id('A'));
+        add(schedule, bFn, id('B'));
+        add(schedule, cFn, id('C'));
+
+        run(schedule, {});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+
+        remove(schedule, bFn);
+        build(schedule);
+
+        order = [];
+        run(schedule, {});
+
+        expect(order).toEqual(['A', 'C']);
     });
 });

@@ -213,4 +213,24 @@ describe('Schedule Class', () => {
 
         expect(order).toEqual(['A', 'B', 'C']);
     });
+
+    test('remove runnables from the schedule', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { id: 'B' });
+        schedule.add(cFn, { id: 'C' });
+
+        schedule.run({});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+
+        schedule.remove(bFn);
+        schedule.build();
+
+        order = [];
+        schedule.run({});
+
+        expect(order).toEqual(['A', 'C']);
+    });
 });
