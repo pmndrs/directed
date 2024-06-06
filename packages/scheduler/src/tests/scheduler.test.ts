@@ -54,6 +54,7 @@ describe('Scheduler', () => {
         const schedule = create();
 
         add(schedule, aFn, id('A'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -67,6 +68,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, id('A'));
         add(schedule, bFn, before('A'), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -81,6 +83,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, id('A'));
         add(schedule, bFn, after('A'), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -97,6 +100,7 @@ describe('Scheduler', () => {
         add(schedule, bFn, id('B'));
         add(schedule, cFn, after('A', 'B'), id('C'));
         add(schedule, dFn, after('C'), id('D'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -116,6 +120,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -135,6 +140,7 @@ describe('Scheduler', () => {
         add(schedule, bFn, after('A'), tag(group1), id('B'));
         add(schedule, cFn, before(group1), id('C'));
         add(schedule, dFn, after(group1), id('D'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -159,6 +165,7 @@ describe('Scheduler', () => {
         add(schedule, dFn, after(group1), id('D'));
 
         add(schedule, eFn, tag(group1), id('E'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -178,6 +185,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, id('A'));
         add(schedule, bFn, id('B'));
         add(schedule, cFn, id('C'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -203,6 +211,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, tag(group2), id('B'));
         add(schedule, cFn, tag(group3), id('C'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -221,6 +230,7 @@ describe('Scheduler', () => {
             add(schedule, aFn, id('A'));
             add(schedule, aFn, id('A'));
             add(schedule, aFn, id('A'));
+            build(schedule);
 
             run(schedule, {});
 
@@ -254,6 +264,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, id('A'));
         add(schedule, bFn, after('A'), id('B'));
         add(schedule, cFn, after('B'), id('C'));
+        build(schedule);
 
         await run(schedule, {});
 
@@ -266,6 +277,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, id('A'));
         add(schedule, bFn, id('B'));
         add(schedule, cFn, id('C'));
+        build(schedule);
 
         run(schedule, {});
 

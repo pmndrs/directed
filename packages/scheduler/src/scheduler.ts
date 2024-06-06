@@ -315,9 +315,6 @@ export function add<T extends Scheduler.Context = Scheduler.Context>(
     for (const option of options) {
         option(optionParams);
     }
-
-    // sort the graph - make manual
-    schedule.dag.topSort();
 }
 
 /**
