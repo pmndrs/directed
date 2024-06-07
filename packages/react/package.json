@@ -1,0 +1,44 @@
+{
+  "name": "@directed/react",
+  "private": true,
+  "version": "0.0.1",
+  "type": "module",
+  "license": "MIT",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "src/index.ts",
+  "module": "src/index.ts",
+  "types": "src/index.ts",
+  "exports": {
+    ".": {
+      "import": "./src/index.ts",
+      "require": "./src/index.ts",
+      "types": "./src/index.ts"
+    }
+  },
+  "dependencies": {
+    "@directed/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "19.0.0-rc-cc1ec60d0d-20240607"
+  },
+  "devDependencies": {
+    "@types/react": "npm:types-react@rc",
+    "@types/node": "^20.12.11",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "typescript": "^5.2.2",
+    "react": "19.0.0-rc-cc1ec60d0d-20240607",
+    "vite": "^5.2.0",
+    "vite-plugin-dts": "^3.9.1",
+    "vite-plugin-tsconfig-paths": "^1.4.1",
+    "vitest": "^1.5.0"
+  }
+}
