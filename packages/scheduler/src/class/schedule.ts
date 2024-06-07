@@ -40,7 +40,7 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         return this;
     }
 
-    remove(runnable: Runnable): Schedule<T> {
+    remove(runnable: Runnable<T>): Schedule<T> {
         remove(this, runnable);
         return this;
     }
