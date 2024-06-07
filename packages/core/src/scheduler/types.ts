@@ -1,4 +1,4 @@
-import { DirectedGraph } from './directed-graph-types';
+import { DirectedGraph } from '../directed-graph/types';
 
 declare global {
     namespace Scheduler {

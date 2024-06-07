@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { Queue } from '../queue';
+import { Queue } from '../queue/queue';
 
 describe('Queue', () => {
     test('enqueue and dequeue', () => {

@@ -10,7 +10,7 @@ import {
     tag,
     remove,
     build,
-} from '../scheduler';
+} from '../scheduler/scheduler';
 
 describe('Scheduler', () => {
     let order: string[] = [];

@@ -1,5 +1,5 @@
-import { DirectedGraph } from './directed-graph';
-import { Options, OptionsFn, Runnable, Schedule, Tag } from './scheduler-types';
+import { DirectedGraph } from '../directed-graph/directed-graph';
+import { Options, OptionsFn, Runnable, Schedule, Tag } from './types';
 
 /**
  * Splits the input ids into tags and runnables based on their type and retrieves corresponding tags and runnables from the schedule.

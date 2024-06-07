@@ -1,4 +1,4 @@
-import { Runnable } from '../scheduler-types';
+import { Runnable } from '../scheduler/types';
 
 export type OptionsObject<T extends Scheduler.Context = Scheduler.Context> = {
     id?: symbol | string;

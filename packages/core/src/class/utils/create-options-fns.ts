@@ -3,8 +3,8 @@ import {
     before as beforeFn,
     id as idFn,
     tag as tagFn,
-} from '../../scheduler';
-import { OptionsFn } from '../../scheduler-types';
+} from '../../scheduler/scheduler';
+import { OptionsFn } from '../../scheduler/types';
 import { OptionsObject } from '../types';
 
 export function createOptionsFns<

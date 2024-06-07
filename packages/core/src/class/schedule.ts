@@ -1,4 +1,4 @@
-import { DirectedGraph } from '../directed-graph';
+import { DirectedGraph } from '../directed-graph/directed-graph';
 import {
     add,
     build,
@@ -7,8 +7,8 @@ import {
     remove,
     removeTag,
     run,
-} from '../scheduler';
-import type { Runnable, Tag } from '../scheduler-types';
+} from '../scheduler/scheduler';
+import type { Runnable, Tag } from '../scheduler/types';
 import type { OptionsObject } from './types';
 import { createOptionsFns } from './utils/create-options-fns';
 
