@@ -10,9 +10,9 @@ importers:
 
   apps/scheduler-test:
     dependencies:
-      '@directed/scheduler':
+      '@directed/core':
         specifier: workspace:*
-        version: link:../../packages/scheduler
+        version: link:../../packages/core
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -51,7 +51,7 @@ importers:
         specifier: ^5.2.0
         version: 5.2.9(@types/node@20.12.11)
 
-  packages/scheduler:
+  packages/core:
     devDependencies:
       '@types/node':
         specifier: ^20.12.11

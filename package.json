@@ -4,14 +4,14 @@
   "version": "0.0.1-alpha.4",
   "type": "module",
   "license": "MIT",
-  "main": "packages/scheduler/src/index.ts",
-  "module": "packages/scheduler/src/index.ts",
-  "types": "packages/scheduler/src/index.ts",
+  "main": "packages/core/src/index.ts",
+  "module": "packages/core/src/index.ts",
+  "types": "packages/core/src/index.ts",
   "exports": {
     ".": {
-      "import": "./packages/scheduler/src/index.ts",
-      "require": "./packages/scheduler/src/index.ts",
-      "types": "./packages/scheduler/src/index.ts"
+      "import": "./packages/core/src/index.ts",
+      "require": "./packages/core/src/index.ts",
+      "types": "./packages/core/src/index.ts"
     }
   }
 }
