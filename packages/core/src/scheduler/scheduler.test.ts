@@ -10,6 +10,7 @@ import {
     tag,
     remove,
     build,
+    has,
 } from '../scheduler/scheduler';
 
 describe('Scheduler', () => {
@@ -290,5 +291,17 @@ describe('Scheduler', () => {
         run(schedule, {});
 
         expect(order).toEqual(['A', 'C']);
+    });
+
+    test('can check if a runnable is in the schedule', () => {
+        const schedule = create();
+
+        add(schedule, aFn, id('A'));
+        add(schedule, bFn, id('B'));
+        add(schedule, cFn, id('C'));
+        build(schedule);
+
+        expect(has(schedule, aFn)).toBe(true);
+        expect(has(schedule, dFn)).toBe(false);
     });
 });

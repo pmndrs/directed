@@ -243,4 +243,16 @@ describe('Schedule Class', () => {
 
         expect(order).toEqual(['A', 'C']);
     });
+
+    test('can check if a runnable is in the schedule', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { id: 'B' });
+        schedule.add(cFn, { id: 'C' });
+        schedule.build();
+
+        expect(schedule.has(aFn)).toBe(true);
+        expect(schedule.has(dFn)).toBe(false);
+    });
 });

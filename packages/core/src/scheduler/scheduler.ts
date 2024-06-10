@@ -318,6 +318,20 @@ export function add<T extends Scheduler.Context = Scheduler.Context>(
 }
 
 /**
+ * Checks if the given runnable exists in the schedule.
+ *
+ * @param {Schedule} schedule - The schedule to check.
+ * @param {Runnable} runnable - The runnable to check.
+ * @return {boolean} Returns true if the runnable exists, false otherwise.
+ */
+export function has<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    runnable: Runnable<T>
+) {
+    return schedule.dag.exists(runnable);
+}
+
+/**
  * Builds the schedule by performing a topological sort on the directed graph.
  *
  * @param {Schedule} schedule - The schedule to be built.

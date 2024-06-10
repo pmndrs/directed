@@ -4,6 +4,7 @@ import {
     build,
     createTag,
     debug,
+    has,
     remove,
     removeTag,
     run,
@@ -28,6 +29,10 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         add(this, runnable, ...optionsFns);
 
         return this;
+    }
+
+    has(runnable: Runnable<T>): boolean {
+        return has(this, runnable);
     }
 
     async run(context: T): Promise<Schedule<T>> {
