@@ -125,6 +125,14 @@ export function id(id: symbol | string): OptionsFn {
             throw new Error('Id can only be applied to a runnable');
         }
 
+        if (schedule.symbols.has(id)) {
+            throw new Error(
+                `Could not set id ${String(
+                    id
+                )} because it already exists in the schedule`
+            );
+        }
+
         if (typeof id === 'string') {
             dag.name(runnable, id);
         }
@@ -288,32 +296,40 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
  * Adds a runnable to the schedule and applies options to it.  The schedule must be built after a runnable is added.
  *
  * @param {Schedule} schedule - The schedule to add the runnable to.
- * @param {Runnable} runnable - The runnable to add to the schedule.
- * @param {...OptionsFn[]} options - The options to apply to the runnable.
+ * @param {Runnable | Runnable[]} runnable - The runnable or array of runnables to add to the schedule.
+ * @param {...OptionsFn[]} options - The options to apply to the runnable. ID can not be used if runnable is an array.
  * @throws {Error} If the runnable already exists in the schedule.
  * @return {void}
  */
 export function add<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
-    runnable: Runnable<T>,
+    runnable: Runnable<T> | Runnable<T>[],
     ...options: OptionsFn<T>[]
 ) {
-    if (schedule.dag.exists(runnable)) {
-        throw new Error('Runnable already exists in schedule');
+    // TODO: Fix typing to disallow id if runnable is an array. Possible with janky typing using function tags (ie. type SingleOption = () & { __type: 'single'}, type MultiOption = () & { __type: 'single' | 'multi' }) - think about it some more
+
+    if (!Array.isArray(runnable)) {
+        runnable = [runnable];
     }
 
-    // add the runnable to the graph
-    schedule.dag.addVertex(runnable, {});
+    for (const r of runnable) {
+        if (schedule.dag.exists(r)) {
+            throw new Error('Runnable already exists in schedule');
+        }
 
-    const optionParams: Options<T> = {
-        dag: schedule.dag,
-        runnable,
-        schedule,
-    };
+        // add the runnable to the graph
+        schedule.dag.addVertex(r, {});
 
-    // apply all options: tag, before, after
-    for (const option of options) {
-        option(optionParams);
+        const optionParams: Options<T> = {
+            dag: schedule.dag,
+            runnable: r,
+            schedule,
+        };
+
+        // apply all options: tag, before, after
+        for (const option of options) {
+            option(optionParams);
+        }
     }
 }
 

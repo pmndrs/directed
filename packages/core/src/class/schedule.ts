@@ -24,7 +24,15 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         this.symbols = new Map<symbol | string, Runnable<T>>();
     }
 
-    add(runnable: Runnable<T>, options?: OptionsObject<T>): Schedule<T> {
+    add(
+        runnable: Runnable<T>[],
+        options?: Omit<OptionsObject<T>, 'id'>
+    ): Schedule<T>;
+    add(runnable: Runnable<T>, options?: OptionsObject<T>): Schedule<T>;
+    add(
+        runnable: Runnable<T> | Runnable<T>[],
+        options?: OptionsObject<T>
+    ): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         add(this, runnable, ...optionsFns);
 

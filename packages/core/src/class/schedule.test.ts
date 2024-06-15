@@ -119,6 +119,26 @@ describe('Schedule Class', () => {
         expect(order).toEqual(['A', 'B']);
     });
 
+    test('schedule multiple runnables at once with a single tag', () => {
+        const group1 = Symbol();
+        const schedule = new Schedule();
+
+        schedule.createTag(group1);
+
+        schedule.add([aFn, bFn, cFn], {
+            tag: group1,
+        });
+        schedule.build();
+
+        schedule.run({});
+
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+        expect(cFn).toBeCalledTimes(1);
+
+        expect(order).toEqual(['A', 'B', 'C']);
+    });
+
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
         const schedule = new Schedule();
