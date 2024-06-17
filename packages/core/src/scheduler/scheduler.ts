@@ -1,5 +1,13 @@
 import { DirectedGraph } from '../directed-graph/directed-graph';
-import { Options, OptionsFn, Runnable, Schedule, Tag } from './types';
+import type {
+    MultiOptionsFn,
+    Options,
+    OptionsFn,
+    Runnable,
+    Schedule,
+    SingleOptionsFn,
+    Tag,
+} from './types';
 
 /**
  * Splits the input ids into tags and runnables based on their type and retrieves corresponding tags and runnables from the schedule.
@@ -8,12 +16,12 @@ import { Options, OptionsFn, Runnable, Schedule, Tag } from './types';
  * @param {(symbol | string | Runnable)[]} ids - The ids to split into tags and runnables.
  * @return {{ tags: Tag[], runnables: Runnable[] }} An object containing the extracted tags and runnables.
  */
-function splitTagsAndRunnables(
-    schedule: Schedule,
-    ...ids: (symbol | string | Runnable)[]
+function splitTagsAndRunnables<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    ...ids: (symbol | string | Runnable<T>)[]
 ) {
-    let tags: Tag[] = [];
-    let runnables: Runnable[] = [];
+    let tags: Tag<T>[] = [];
+    let runnables: Runnable<T>[] = [];
 
     for (let i = 0; i < ids.length; i++) {
         const id = ids[i];
@@ -47,8 +55,10 @@ function splitTagsAndRunnables(
  * @param {(symbol | string | Runnable)[]} ids - The ids to split into tags and runnables.
  * @return {OptionsFn} A function to schedule runnables before specified tags and runnables.
  */
-export function before(...ids: (symbol | string | Runnable)[]): OptionsFn {
-    return ({ schedule, dag, runnable, tag }) => {
+export function before<T extends Scheduler.Context = Scheduler.Context>(
+    ...ids: (symbol | string | Runnable<T>)[]
+): MultiOptionsFn<T> {
+    const fn: MultiOptionsFn<T> = ({ schedule, dag, runnable, tag }) => {
         const { tags, runnables } = splitTagsAndRunnables(schedule, ...ids);
 
         if (runnable) {
@@ -75,6 +85,10 @@ export function before(...ids: (symbol | string | Runnable)[]): OptionsFn {
             }
         }
     };
+
+    fn.__type = 'multi';
+
+    return fn;
 }
 
 /**
@@ -83,8 +97,10 @@ export function before(...ids: (symbol | string | Runnable)[]): OptionsFn {
  * @param {...(symbol | string | Runnable)} ids - The ids to split into tags and runnables.
  * @return {OptionsFn} A function to schedule runnables after specified tags and runnables.
  */
-export function after(...ids: (symbol | string | Runnable)[]): OptionsFn {
-    return ({ schedule, dag, runnable, tag }) => {
+export function after<T extends Scheduler.Context = Scheduler.Context>(
+    ...ids: (symbol | string | Runnable<T>)[]
+): MultiOptionsFn<T> {
+    const fn: MultiOptionsFn<T> = ({ schedule, dag, runnable, tag }) => {
         const { tags, runnables } = splitTagsAndRunnables(schedule, ...ids);
 
         if (runnable) {
@@ -111,6 +127,10 @@ export function after(...ids: (symbol | string | Runnable)[]): OptionsFn {
             }
         }
     };
+
+    fn.__type = 'multi';
+
+    return fn;
 }
 
 /**
@@ -119,8 +139,10 @@ export function after(...ids: (symbol | string | Runnable)[]): OptionsFn {
  * @param {symbol | string} id - The ID to be set for the runnable.
  * @return {OptionsFn} A function that sets the ID of a runnable in the schedule.
  */
-export function id(id: symbol | string): OptionsFn {
-    return ({ runnable, dag, schedule }) => {
+export function id<T extends Scheduler.Context = Scheduler.Context>(
+    id: symbol | string
+): SingleOptionsFn<T> {
+    const fn: SingleOptionsFn<T> = ({ runnable, dag, schedule }) => {
         if (!runnable) {
             throw new Error('Id can only be applied to a runnable');
         }
@@ -139,6 +161,10 @@ export function id(id: symbol | string): OptionsFn {
 
         schedule.symbols.set(id, runnable);
     };
+
+    fn.__type = 'single';
+
+    return fn;
 }
 
 /**
@@ -147,8 +173,10 @@ export function id(id: symbol | string): OptionsFn {
  * @param {symbol | string} id - The unique identifier of the tag to apply.
  * @return {OptionsFn} A function that applies the tag to the provided runnable.
  */
-export function tag(id: symbol | string): OptionsFn {
-    return ({ schedule, runnable, dag }) => {
+export function tag<T extends Scheduler.Context = Scheduler.Context>(
+    id: symbol | string
+): MultiOptionsFn<T> {
+    const fn: MultiOptionsFn<T> = ({ schedule, runnable, dag }) => {
         if (!runnable) {
             throw new Error('Tag can only be applied to a runnable');
         }
@@ -163,6 +191,10 @@ export function tag(id: symbol | string): OptionsFn {
         dag.addEdge(tag.before, runnable);
         dag.addEdge(runnable, tag.after);
     };
+
+    fn.__type = 'multi';
+
+    return fn;
 }
 
 /**
@@ -301,18 +333,25 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
  * @throws {Error} If the runnable already exists in the schedule.
  * @return {void}
  */
-export function add<T extends Scheduler.Context = Scheduler.Context>(
+export function add<
+    T extends Scheduler.Context = Scheduler.Context,
+    R extends Runnable<T> | Runnable<T>[] = Runnable<T> | Runnable<T>[]
+>(
     schedule: Schedule<T>,
-    runnable: Runnable<T> | Runnable<T>[],
-    ...options: OptionsFn<T>[]
+    runnable: R,
+    ...options: R extends Runnable<T>
+        ? SingleOptionsFn<T>[]
+        : MultiOptionsFn<T>[]
 ) {
-    // TODO: Fix typing to disallow id if runnable is an array. Possible with janky typing using function tags (ie. type SingleOption = () & { __type: 'single'}, type MultiOption = () & { __type: 'single' | 'multi' }) - think about it some more
+    let runnables: Runnable<T>[] = [];
 
-    if (!Array.isArray(runnable)) {
-        runnable = [runnable];
+    if (Array.isArray(runnable)) {
+        runnables = runnable;
+    } else {
+        runnables = [runnable];
     }
 
-    for (const r of runnable) {
+    for (const r of runnables) {
         if (schedule.dag.exists(r)) {
             throw new Error('Runnable already exists in schedule');
         }

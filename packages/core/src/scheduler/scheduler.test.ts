@@ -149,28 +149,6 @@ describe('Scheduler', () => {
         expect(order).toEqual(['A', 'B', 'C']);
     });
 
-    // TODO: This test is only present because current typing allows it
-    test.fails(
-        'scheduling multiple runnables at once with a single tag and id should fail',
-        () => {
-            const group1 = Symbol();
-            const schedule = create();
-
-            createTag(schedule, group1);
-
-            add(schedule, [aFn, bFn, cFn], tag(group1), id('A'));
-            build(schedule);
-
-            run(schedule, {});
-
-            expect(aFn).toBeCalledTimes(1);
-            expect(bFn).toBeCalledTimes(1);
-            expect(cFn).toBeCalledTimes(1);
-
-            expect(order).toEqual(['A', 'B', 'C']);
-        }
-    );
-
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
         const schedule = create();
@@ -181,6 +159,7 @@ describe('Scheduler', () => {
         add(schedule, bFn, after('A'), tag(group1), id('B'));
         add(schedule, cFn, before(group1), id('C'));
         add(schedule, dFn, after(group1), id('D'));
+
         build(schedule);
 
         run(schedule, {});

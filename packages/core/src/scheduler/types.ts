@@ -23,9 +23,16 @@ export type Options<T extends Scheduler.Context = Scheduler.Context> = {
     tag?: Tag<T>;
 };
 
-export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> = (
+export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> =
+    | SingleOptionsFn<T>
+    | MultiOptionsFn<T>;
+
+export type SingleOptionsFn<T extends Scheduler.Context = Scheduler.Context> =
+    ((options: Options<T>) => void) & { __type: 'single' | 'multi' };
+
+export type MultiOptionsFn<T extends Scheduler.Context = Scheduler.Context> = ((
     options: Options<T>
-) => void;
+) => void) & { __type: 'multi' };
 
 export type Tag<T extends Scheduler.Context = Scheduler.Context> = {
     id: symbol | string;

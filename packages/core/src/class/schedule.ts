@@ -10,7 +10,7 @@ import {
     run,
 } from '../scheduler/scheduler';
 import type { Runnable, Tag } from '../scheduler/types';
-import type { OptionsObject } from './types';
+import type { OptionsObject, SingleOptionsObject } from './types';
 import { createOptionsFns } from './utils/create-options-fns';
 
 export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
@@ -24,14 +24,11 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         this.symbols = new Map<symbol | string, Runnable<T>>();
     }
 
-    add(
-        runnable: Runnable<T>[],
-        options?: Omit<OptionsObject<T>, 'id'>
-    ): Schedule<T>;
-    add(runnable: Runnable<T>, options?: OptionsObject<T>): Schedule<T>;
+    add(runnable: Runnable<T>[], options?: OptionsObject<T>): Schedule<T>;
+    add(runnable: Runnable<T>, options?: SingleOptionsObject<T>): Schedule<T>;
     add(
         runnable: Runnable<T> | Runnable<T>[],
-        options?: OptionsObject<T>
+        options?: OptionsObject<T> | SingleOptionsObject<T>
     ): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         add(this, runnable, ...optionsFns);

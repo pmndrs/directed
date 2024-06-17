@@ -4,19 +4,33 @@ import {
     id as idFn,
     tag as tagFn,
 } from '../../scheduler/scheduler';
-import { OptionsFn } from '../../scheduler/types';
-import { OptionsObject } from '../types';
+import type {
+    MultiOptionsFn,
+    OptionsFn,
+    SingleOptionsFn,
+} from '../../scheduler/types';
+import type { OptionsObject, SingleOptionsObject } from '../types';
 
 export function createOptionsFns<
     T extends Scheduler.Context = Scheduler.Context
->(options: OptionsObject<any> | undefined): OptionsFn<T>[] {
-    const optionsFns: OptionsFn[] = [];
+>(options?: SingleOptionsObject<T>): SingleOptionsFn<T>[];
+export function createOptionsFns<
+    T extends Scheduler.Context = Scheduler.Context
+>(options?: OptionsObject<T>): MultiOptionsFn<T>[];
+export function createOptionsFns<
+    T extends Scheduler.Context = Scheduler.Context
+>(
+    options?: OptionsObject<T> | SingleOptionsObject<T>
+): SingleOptionsFn<T>[] | MultiOptionsFn<T>[] {
+    if (!options) return [];
 
-    if (options?.id) {
+    const optionsFns: OptionsFn<T>[] = [];
+
+    if ('id' in options) {
         optionsFns.push(idFn(options.id));
     }
 
-    if (options?.before) {
+    if (options.before) {
         if (Array.isArray(options.before)) {
             optionsFns.push(
                 ...options.before.map((before) => beforeFn(before))
@@ -26,7 +40,7 @@ export function createOptionsFns<
         }
     }
 
-    if (options?.after) {
+    if (options.after) {
         if (Array.isArray(options.after)) {
             optionsFns.push(...options.after.map((after) => afterFn(after)));
         } else {
@@ -34,12 +48,13 @@ export function createOptionsFns<
         }
     }
 
-    if (options?.tag) {
+    if (options.tag) {
         if (Array.isArray(options.tag)) {
-            optionsFns.push(...options.tag.map((tag) => tagFn(tag)));
+            optionsFns.push(...options.tag.map((tag) => tagFn<T>(tag)));
         } else {
             optionsFns.push(tagFn(options.tag));
         }
     }
-    return optionsFns as OptionsFn<T>[];
+
+    return optionsFns;
 }
