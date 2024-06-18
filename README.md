@@ -66,38 +66,6 @@ schedule.add(C, { after: 'render' })
 // Executes with the order B -> A -> C
 ```
 ## API
-- Create
-- Schedule
-    - Schedule options
-- Run
-- Utilities
 
-### create
-
-### before
-
-### after
-
-### id
-
-### tag
-
-### run
-
-### removeTag
-
-### hasTag
-
-### createTag
-
-### add
-
-### build
-
-### remove
-
-### getRunnable
-
-### getTag
-
-### debug
+> [!CAUTION]
+> Not quite done yet! All functions have JSDoc comments you can read [here](packages/core/src/scheduler/scheduler.ts) for the functional API. The class API is virtually the same, just formatted as methods which you can find [here](packages/core/src/class/schedule.ts).
