@@ -41,6 +41,9 @@ Scheduler.add(schedule, applyGravity, before(moveBody))
 Scheduler.run(schedule, state)
 ```
 
+> [!TIP]
+> See the tests for more usage examples until we write out better docs. [Here](packages/core//src/scheduler/scheduler.test.ts) for functional and [here](packages/core/src/class/schedule.test.ts) for class.
+
 ## What's the big deal?
 Scheduling update functions is simple when you have visibility of an entire static app, you just call them in the order required. The problem comes when the app scales and you no longer have full visibiilty, or if the app is dynamic and updates may or may not exist at any given time. You need to be confident that data is updated in the correct order at all times. 
 
