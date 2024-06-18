@@ -34,11 +34,34 @@ import * as Scheduler from 'directed'
 const applyGravity = (state) => {}
 const moveBody = (state) => {}
 
-const schedule = Scheduler.reate()
+const schedule = Scheduler.create()
 Scheduler.add(schedule, moveBody)
 Scheduler.add(schedule, applyGravity, before(moveBody))
 
 Scheduler.run(schedule, state)
+```
+
+### React
+```js
+import { Schedule } from 'directed'
+import { useSchedule } from 'directed/react'
+
+const applyGravity = (state) => {}
+const moveBody = (state) => {}
+
+const schedule = new Schedule()
+
+// You can create hook bound to your schedule.
+function useMySchedule(runnable, options) {
+    return useSchedule(schedule, runnable, options)
+}
+
+function Foo({ children }) {
+    useMySchedule(moveBody)
+    useMySchedule(applyGravity, { before: moveBody })
+
+    return children
+}
 ```
 
 > [!TIP]
