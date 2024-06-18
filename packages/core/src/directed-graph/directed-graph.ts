@@ -1,4 +1,4 @@
-import { Queue } from './queue';
+import { Queue } from '../queue/queue';
 
 // Vertex represents a vertex in a directed graph.
 class Vertex<T> {

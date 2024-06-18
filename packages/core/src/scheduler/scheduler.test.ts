@@ -8,7 +8,10 @@ import {
     createTag,
     run,
     tag,
-} from '../scheduler';
+    remove,
+    build,
+    has,
+} from '../scheduler/scheduler';
 
 describe('Scheduler', () => {
     let order: string[] = [];
@@ -52,6 +55,7 @@ describe('Scheduler', () => {
         const schedule = create();
 
         add(schedule, aFn, id('A'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -65,6 +69,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, id('A'));
         add(schedule, bFn, before('A'), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -79,6 +84,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, id('A'));
         add(schedule, bFn, after('A'), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -95,6 +101,7 @@ describe('Scheduler', () => {
         add(schedule, bFn, id('B'));
         add(schedule, cFn, after('A', 'B'), id('C'));
         add(schedule, dFn, after('C'), id('D'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -114,6 +121,7 @@ describe('Scheduler', () => {
 
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -121,6 +129,24 @@ describe('Scheduler', () => {
         expect(bFn).toBeCalledTimes(1);
 
         expect(order).toEqual(['A', 'B']);
+    });
+
+    test('schedule multiple runnables at once with a single tag', () => {
+        const group1 = Symbol();
+        const schedule = create();
+
+        createTag(schedule, group1);
+
+        add(schedule, [aFn, bFn, cFn], tag(group1));
+        build(schedule);
+
+        run(schedule, {});
+
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+        expect(cFn).toBeCalledTimes(1);
+
+        expect(order).toEqual(['A', 'B', 'C']);
     });
 
     test('schedule a runnable before and after a tag', () => {
@@ -133,6 +159,8 @@ describe('Scheduler', () => {
         add(schedule, bFn, after('A'), tag(group1), id('B'));
         add(schedule, cFn, before(group1), id('C'));
         add(schedule, dFn, after(group1), id('D'));
+
+        build(schedule);
 
         run(schedule, {});
 
@@ -150,13 +178,14 @@ describe('Scheduler', () => {
 
         createTag(schedule, group1);
 
-        add(schedule, aFn, id('A'), tag(group1), id('A'));
+        add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, after('A'), tag(group1), id('B'));
 
         add(schedule, cFn, before(group1), id('C'));
         add(schedule, dFn, after(group1), id('D'));
 
         add(schedule, eFn, tag(group1), id('E'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -176,6 +205,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, id('A'));
         add(schedule, bFn, id('B'));
         add(schedule, cFn, id('C'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -201,6 +231,7 @@ describe('Scheduler', () => {
         add(schedule, aFn, tag(group1), id('A'));
         add(schedule, bFn, tag(group2), id('B'));
         add(schedule, cFn, tag(group3), id('C'));
+        build(schedule);
 
         run(schedule, {});
 
@@ -211,17 +242,85 @@ describe('Scheduler', () => {
         expect(order).toEqual(['B', 'A', 'C']);
     });
 
-    test.fails('scheduling the same runnable multiple times does not run it multiple times', () => {
+    test.fails(
+        'scheduling the same runnable multiple times does not run it multiple times',
+        () => {
+            const schedule = create();
+
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+            add(schedule, aFn, id('A'));
+            build(schedule);
+
+            run(schedule, {});
+
+            expect(aFn).toBeCalledTimes(1);
+
+            expect(order).toEqual(['A']);
+        }
+    );
+
+    test('scheduling async runnables', async () => {
+        const schedule = create();
+
+        const aFn = async () => {
+            order.push('A');
+        };
+
+        const bFn = async () => {
+            // Don't resolve until the next tick
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    order.push('B');
+                    resolve();
+                }, 100);
+            });
+        };
+
+        const cFn = () => {
+            order.push('C');
+        };
+
+        add(schedule, aFn, id('A'));
+        add(schedule, bFn, after('A'), id('B'));
+        add(schedule, cFn, after('B'), id('C'));
+        build(schedule);
+
+        await run(schedule, {});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+    });
+
+    test('remove runnables from the schedule', () => {
         const schedule = create();
 
         add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
-        add(schedule, aFn, id('A'));
+        add(schedule, bFn, id('B'));
+        add(schedule, cFn, id('C'));
+        build(schedule);
 
         run(schedule, {});
 
-        expect(aFn).toBeCalledTimes(1);
+        expect(order).toEqual(['A', 'B', 'C']);
 
-        expect(order).toEqual(['A']);
+        remove(schedule, bFn);
+        build(schedule);
+
+        order = [];
+        run(schedule, {});
+
+        expect(order).toEqual(['A', 'C']);
+    });
+
+    test('can check if a runnable is in the schedule', () => {
+        const schedule = create();
+
+        add(schedule, aFn, id('A'));
+        add(schedule, bFn, id('B'));
+        add(schedule, cFn, id('C'));
+        build(schedule);
+
+        expect(has(schedule, aFn)).toBe(true);
+        expect(has(schedule, dFn)).toBe(false);
     });
 });

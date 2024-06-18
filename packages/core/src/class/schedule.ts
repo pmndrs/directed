@@ -1,15 +1,16 @@
-import { DirectedGraph } from '../directed-graph';
+import { DirectedGraph } from '../directed-graph/directed-graph';
 import {
     add,
     build,
     createTag,
     debug,
+    has,
     remove,
     removeTag,
     run,
-} from '../scheduler';
-import type { Runnable, Tag } from '../scheduler-types';
-import type { OptionsObject } from './types';
+} from '../scheduler/scheduler';
+import type { Runnable, Tag } from '../scheduler/types';
+import type { OptionsObject, SingleOptionsObject } from './types';
 import { createOptionsFns } from './utils/create-options-fns';
 
 export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
@@ -23,15 +24,24 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         this.symbols = new Map<symbol | string, Runnable<T>>();
     }
 
-    add(runnable: Runnable<T>, options?: OptionsObject): Schedule<T> {
+    add(runnable: Runnable<T>[], options?: OptionsObject<T>): Schedule<T>;
+    add(runnable: Runnable<T>, options?: SingleOptionsObject<T>): Schedule<T>;
+    add(
+        runnable: Runnable<T> | Runnable<T>[],
+        options?: OptionsObject<T> | SingleOptionsObject<T>
+    ): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         add(this, runnable, ...optionsFns);
 
         return this;
     }
 
-    run(context: T): Schedule<T> {
-        run(this, context);
+    has(runnable: Runnable<T>): boolean {
+        return has(this, runnable);
+    }
+
+    async run(context: T): Promise<Schedule<T>> {
+        await run(this, context);
         return this;
     }
 
@@ -40,7 +50,7 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         return this;
     }
 
-    remove(runnable: Runnable): Schedule<T> {
+    remove(runnable: Runnable<T>): Schedule<T> {
         remove(this, runnable);
         return this;
     }
@@ -50,7 +60,7 @@ export class Schedule<T extends Scheduler.Context = Scheduler.Context> {
         return this;
     }
 
-    createTag(id: symbol | string, options?: OptionsObject): Schedule<T> {
+    createTag(id: symbol | string, options?: OptionsObject<T>): Schedule<T> {
         const optionsFns = createOptionsFns<T>(options);
         createTag(this, id, ...optionsFns);
         return this;

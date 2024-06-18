@@ -1,4 +1,4 @@
-import { DirectedGraph } from './directed-graph-types';
+import { DirectedGraph } from '../directed-graph/types';
 
 declare global {
     namespace Scheduler {
@@ -8,7 +8,7 @@ declare global {
 
 export type Runnable<T extends Scheduler.Context = Scheduler.Context> = (
     context: T
-) => void;
+) => void | Promise<void>;
 
 export interface Schedule<T extends Scheduler.Context = Scheduler.Context> {
     dag: DirectedGraph<Runnable<T>>;
@@ -23,9 +23,16 @@ export type Options<T extends Scheduler.Context = Scheduler.Context> = {
     tag?: Tag<T>;
 };
 
-export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> = (
+export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> =
+    | SingleOptionsFn<T>
+    | MultiOptionsFn<T>;
+
+export type SingleOptionsFn<T extends Scheduler.Context = Scheduler.Context> =
+    ((options: Options<T>) => void) & { __type: 'single' | 'multi' };
+
+export type MultiOptionsFn<T extends Scheduler.Context = Scheduler.Context> = ((
     options: Options<T>
-) => void;
+) => void) & { __type: 'multi' };
 
 export type Tag<T extends Scheduler.Context = Scheduler.Context> = {
     id: symbol | string;

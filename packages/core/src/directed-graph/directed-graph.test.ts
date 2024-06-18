@@ -1,5 +1,5 @@
 import { describe, test, expect } from 'vitest';
-import { DirectedGraph } from '../directed-graph';
+import { DirectedGraph } from '../directed-graph/directed-graph';
 
 describe('DirectedGraph', () => {
     test('simple graph with no cycles', () => {

@@ -43,6 +43,7 @@ describe('Schedule Class', () => {
         const schedule = new Schedule();
 
         schedule.add(aFn, { id: 'A' });
+        schedule.build();
 
         schedule.run({});
 
@@ -56,6 +57,7 @@ describe('Schedule Class', () => {
 
         schedule.add(aFn, { id: 'A' });
         schedule.add(bFn, { id: 'B', before: 'A' });
+        schedule.build();
 
         schedule.run({});
 
@@ -70,6 +72,7 @@ describe('Schedule Class', () => {
 
         schedule.add(aFn, { id: 'A' });
         schedule.add(bFn, { id: 'B', after: 'A' });
+        schedule.build();
 
         schedule.run({});
 
@@ -86,6 +89,7 @@ describe('Schedule Class', () => {
         schedule.add(bFn, { id: 'B' });
         schedule.add(cFn, { id: 'C', after: ['A', 'B'] });
         schedule.add(dFn, { id: 'D', after: 'C' });
+        schedule.build();
 
         schedule.run({});
 
@@ -105,6 +109,7 @@ describe('Schedule Class', () => {
 
         schedule.add(aFn, { id: 'A', tag: group1 });
         schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
+        schedule.build();
 
         schedule.run({});
 
@@ -112,6 +117,26 @@ describe('Schedule Class', () => {
         expect(bFn).toBeCalledTimes(1);
 
         expect(order).toEqual(['A', 'B']);
+    });
+
+    test('schedule multiple runnables at once with a single tag', () => {
+        const group1 = Symbol();
+        const schedule = new Schedule();
+
+        schedule.createTag(group1);
+
+        schedule.add([aFn, bFn, cFn], {
+            tag: group1,
+        });
+        schedule.build();
+
+        schedule.run({});
+
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+        expect(cFn).toBeCalledTimes(1);
+
+        expect(order).toEqual(['A', 'B', 'C']);
     });
 
     test('schedule a runnable before and after a tag', () => {
@@ -124,6 +149,7 @@ describe('Schedule Class', () => {
         schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
         schedule.add(cFn, { id: 'C', before: group1 });
         schedule.add(dFn, { id: 'D', after: group1 });
+        schedule.build();
 
         schedule.run({});
 
@@ -148,6 +174,7 @@ describe('Schedule Class', () => {
         schedule.add(dFn, { id: 'D', after: group1 });
 
         schedule.add(eFn, { id: 'E', tag: group1 });
+        schedule.build();
 
         schedule.run({});
 
@@ -174,6 +201,7 @@ describe('Schedule Class', () => {
         schedule.add(aFn, { tag: group1, id: 'A' });
         schedule.add(bFn, { tag: group2, id: 'B' });
         schedule.add(cFn, { tag: group3, id: 'C' });
+        schedule.build();
 
         schedule.run({});
 
@@ -182,5 +210,69 @@ describe('Schedule Class', () => {
         expect(cFn).toBeCalledTimes(1);
 
         expect(order).toEqual(['B', 'A', 'C']);
+    });
+
+    test('scheduling async runnables', async () => {
+        const schedule = new Schedule();
+
+        const aFn = async () => {
+            order.push('A');
+        };
+
+        const bFn = async () => {
+            // Don't resolve until the next tick
+            await new Promise<void>((resolve) => {
+                setTimeout(() => {
+                    order.push('B');
+                    resolve();
+                }, 100);
+            });
+        };
+
+        const cFn = () => {
+            order.push('C');
+        };
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { after: 'A', id: 'B' });
+        schedule.add(cFn, { after: 'B', id: 'C' });
+        schedule.build();
+
+        await schedule.run({});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+    });
+
+    test('remove runnables from the schedule', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { id: 'B' });
+        schedule.add(cFn, { id: 'C' });
+        schedule.build();
+
+        schedule.run({});
+
+        expect(order).toEqual(['A', 'B', 'C']);
+
+        schedule.remove(bFn);
+        schedule.build();
+
+        order = [];
+        schedule.run({});
+
+        expect(order).toEqual(['A', 'C']);
+    });
+
+    test('can check if a runnable is in the schedule', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(bFn, { id: 'B' });
+        schedule.add(cFn, { id: 'C' });
+        schedule.build();
+
+        expect(schedule.has(aFn)).toBe(true);
+        expect(schedule.has(dFn)).toBe(false);
     });
 });
