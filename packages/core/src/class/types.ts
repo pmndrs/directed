@@ -8,4 +8,4 @@ export type OptionsObject<T extends Scheduler.Context = Scheduler.Context> = {
 
 export type SingleOptionsObject<
     T extends Scheduler.Context = Scheduler.Context
-> = OptionsObject<T> & { id: string | symbol };
+> = OptionsObject<T> & { id?: string | symbol };

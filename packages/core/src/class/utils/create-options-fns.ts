@@ -26,7 +26,7 @@ export function createOptionsFns<
 
     const optionsFns: OptionsFn<T>[] = [];
 
-    if ('id' in options) {
+    if ('id' in options && options.id) {
         optionsFns.push(idFn(options.id));
     }
 
