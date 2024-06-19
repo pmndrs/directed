@@ -94,6 +94,21 @@ describe('Scheduler', () => {
         expect(order).toEqual(['A', 'B']);
     });
 
+    test('schedule a runnable without an id', () => {
+        const schedule = create();
+
+        add(schedule, aFn);
+        add(schedule, bFn, before(aFn));
+        build(schedule);
+
+        run(schedule, {});
+
+        expect(aFn).toBeCalledTimes(1);
+        expect(bFn).toBeCalledTimes(1);
+
+        expect(order).toEqual(['B', 'A']);
+    });
+
     test('schedule a runnable after multiple runnables', () => {
         const schedule = create();
 
