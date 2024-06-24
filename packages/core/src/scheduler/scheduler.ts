@@ -12,9 +12,9 @@ import type {
 /**
  * Splits the input ids into tags and runnables based on their type and retrieves corresponding tags and runnables from the schedule.
  *
- * @param {Schedule} schedule - The schedule to retrieve tags and runnables from.
- * @param {(symbol | string | Runnable)[]} ids - The ids to split into tags and runnables.
- * @return {{ tags: Tag[], runnables: Runnable[] }} An object containing the extracted tags and runnables.
+ * @param schedule - The schedule to retrieve tags and runnables from.
+ * @param ids - The ids to split into tags and runnables.
+ * @return An object containing the extracted tags and runnables.
  */
 function splitTagsAndRunnables<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -52,8 +52,8 @@ function splitTagsAndRunnables<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * An options function that schedules runnables before specified tags and runnables.
  *
- * @param {(symbol | string | Runnable)[]} ids - The ids to split into tags and runnables.
- * @return {OptionsFn} A function to schedule runnables before specified tags and runnables.
+ * @param ids - The ids to split into tags and runnables.
+ * @return A function to schedule runnables before specified tags and runnables.
  */
 export function before<T extends Scheduler.Context = Scheduler.Context>(
     ...ids: (symbol | string | Runnable<T>)[]
@@ -94,8 +94,8 @@ export function before<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * An options function that schedules runnables after specified tags and runnables.
  *
- * @param {...(symbol | string | Runnable)} ids - The ids to split into tags and runnables.
- * @return {OptionsFn} A function to schedule runnables after specified tags and runnables.
+ * @param ids - The ids to split into tags and runnables.
+ * @return A function to schedule runnables after specified tags and runnables.
  */
 export function after<T extends Scheduler.Context = Scheduler.Context>(
     ...ids: (symbol | string | Runnable<T>)[]
@@ -136,8 +136,8 @@ export function after<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * An options function that sets the ID of a runnable in the schedule.
  *
- * @param {symbol | string} id - The ID to be set for the runnable.
- * @return {OptionsFn} A function that sets the ID of a runnable in the schedule.
+ * @param id - The ID to be set for the runnable.
+ * @return A function that sets the ID of a runnable in the schedule.
  */
 export function id<T extends Scheduler.Context = Scheduler.Context>(
     id: symbol | string
@@ -170,8 +170,8 @@ export function id<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * An options function that applies a tag to a runnable based on the given id, symbol or runnable.
  *
- * @param {symbol | string} id - The unique identifier of the tag to apply.
- * @return {OptionsFn} A function that applies the tag to the provided runnable.
+ * @param id - The unique identifier of the tag to apply.
+ * @return A function that applies the tag to the provided runnable.
  */
 export function tag<T extends Scheduler.Context = Scheduler.Context>(
     id: symbol | string
@@ -201,7 +201,7 @@ export function tag<T extends Scheduler.Context = Scheduler.Context>(
  * Creates a new Schedule object with an empty DirectedGraph,
  * a new Map for tags, and a new Map for symbols.
  *
- * @return {Schedule} The newly created Schedule object.
+ * @return The newly created Schedule object.
  */
 export function create<
     T extends Scheduler.Context = Scheduler.Context
@@ -218,8 +218,8 @@ export function create<
 /**
  * Executes all the runnables in the given schedule with the provided context.
  *
- * @param {Schedule} schedule - The schedule containing the runnables to execute.
- * @param {Context} context - The context to be passed to each runnable.
+ * @param schedule - The schedule containing the runnables to execute.
+ * @param context - The context to be passed to each runnable.
  */
 export async function run<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -237,9 +237,9 @@ export async function run<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Removes a tag from the given schedule by its ID.
  *
- * @param {Schedule} schedule - The schedule from which to remove the tag.
- * @param {symbol | string} id - The ID of the tag to remove.
- * @return {void} This function does not return anything.
+ * @param schedule - The schedule from which to remove the tag.
+ * @param id - The ID of the tag to remove.
+ * @return This function does not return anything.
  */
 export function removeTag<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -260,9 +260,9 @@ export function removeTag<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Checks if a tag with the given ID exists in the schedule.
  *
- * @param {Schedule} schedule - The schedule to check.
- * @param {symbol | string} id - The ID of the tag to check.
- * @return {boolean} Returns true if the tag exists, false otherwise.
+ * @param schedule - The schedule to check.
+ * @param id - The ID of the tag to check.
+ * @return Returns true if the tag exists, false otherwise.
  */
 export function hasTag<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -274,11 +274,11 @@ export function hasTag<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Creates a new tag for the given schedule with the provided ID, name, and options.
  *
- * @param {Schedule} schedule - The schedule to create the tag for.
- * @param {symbol} id - The unique identifier for the tag.
- * @param {string} name - The name of the tag.
- * @param {...OptionsFn[]} options - Additional options to customize the tag.
- * @return {Tag} The newly created tag.
+ * @param schedule - The schedule to create the tag for.
+ * @param id - The unique identifier for the tag.
+ * @param name - The name of the tag.
+ * @param options - Additional options to customize the tag.
+ * @return The newly created tag.
  */
 export function createTag<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -327,11 +327,11 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Adds a runnable to the schedule and applies options to it.  The schedule must be built after a runnable is added.
  *
- * @param {Schedule} schedule - The schedule to add the runnable to.
- * @param {Runnable | Runnable[]} runnable - The runnable or array of runnables to add to the schedule.
- * @param {...OptionsFn[]} options - The options to apply to the runnable. ID can not be used if runnable is an array.
- * @throws {Error} If the runnable already exists in the schedule.
- * @return {void}
+ * @param schedule - The schedule to add the runnable to.
+ * @param runnable - The runnable or array of runnables to add to the schedule.
+ * @param options - The options to apply to the runnable. ID can not be used if runnable is an array.
+ * @throws If the runnable already exists in the schedule.
+ * @return
  */
 export function add<
     T extends Scheduler.Context = Scheduler.Context,
@@ -375,9 +375,9 @@ export function add<
 /**
  * Checks if the given runnable exists in the schedule.
  *
- * @param {Schedule} schedule - The schedule to check.
- * @param {Runnable} runnable - The runnable to check.
- * @return {boolean} Returns true if the runnable exists, false otherwise.
+ * @param schedule - The schedule to check.
+ * @param runnable - The runnable to check.
+ * @return Returns true if the runnable exists, false otherwise.
  */
 export function has<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -389,8 +389,8 @@ export function has<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Builds the schedule by performing a topological sort on the directed graph.
  *
- * @param {Schedule} schedule - The schedule to be built.
- * @return {void} This function does not return anything.
+ * @param schedule - The schedule to be built.
+ * @return This function does not return anything.
  */
 export function build<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>
@@ -401,9 +401,9 @@ export function build<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Removes a runnable from the given schedule.
  *
- * @param {Schedule} schedule - The schedule from which to remove the runnable.
- * @param {Runnable} runnable - The runnable to remove from the schedule.
- * @return {void} This function does not return anything.
+ * @param schedule - The schedule from which to remove the runnable.
+ * @param runnable - The runnable to remove from the schedule.
+ * @return This function does not return anything.
  */
 export function remove<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -415,9 +415,9 @@ export function remove<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Retrieves a runnable from the schedule based on the given ID.
  *
- * @param {Schedule} schedule - The schedule to retrieve the runnable from.
- * @param {symbol | string} id - The ID of the runnable to retrieve.
- * @return {Runnable | undefined} The retrieved runnable or undefined if not found.
+ * @param schedule - The schedule to retrieve the runnable from.
+ * @param id - The ID of the runnable to retrieve.
+ * @return The retrieved runnable or undefined if not found.
  */
 export function getRunnable<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -429,9 +429,9 @@ export function getRunnable<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Retrieves a tag from the given schedule based on the provided ID.
  *
- * @param {Schedule} schedule - The schedule to retrieve the tag from.
- * @param {symbol | string} id - The ID of the tag to retrieve.
- * @return {Tag | undefined} The retrieved tag or undefined if not found.
+ * @param schedule - The schedule to retrieve the tag from.
+ * @param id - The ID of the tag to retrieve.
+ * @return The retrieved tag or undefined if not found.
  */
 export function getTag<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
@@ -443,8 +443,8 @@ export function getTag<T extends Scheduler.Context = Scheduler.Context>(
 /**
  * Prints an ASCII visualization of the directed acyclic graph (DAG) in the given schedule.
  *
- * @param {Schedule} schedule - The schedule containing the DAG to visualize.
- * @return {void} This function does not return anything.
+ * @param schedule - The schedule containing the DAG to visualize.
+ * @return This function does not return anything.
  */
 export function debug<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>
