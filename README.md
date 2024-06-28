@@ -6,7 +6,7 @@
 Directed is a flexible, minimal scheduler written in TypeScript. It is powered by a directed acyclic graph (DAG) allowing for dependency-based scheduling.
 
 ```
-npm install pmndrs/directed#v0.0.1-alpha.4
+npm install pmndrs/directed#v0.0.1-alpha.5
 ```
 
 ## Quickstart
