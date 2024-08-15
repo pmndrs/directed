@@ -1,4 +1,5 @@
 import { Queue } from '../queue/queue';
+import type { VertexID } from './types';
 
 // Vertex represents a vertex in a directed graph.
 class Vertex<T> {
@@ -7,6 +8,7 @@ class Vertex<T> {
     public inEdges: Set<Vertex<T>>;
     public outEdges: Set<Vertex<T>>;
     public excludeFromSort: boolean = false;
+    public id: VertexID;
 
     get outEdgeCount() {
         return this.outEdges.size;
@@ -18,7 +20,11 @@ class Vertex<T> {
 
     constructor(
         value: T,
-        { name, excludeFromSort }: { name?: string; excludeFromSort?: boolean }
+        {
+            name,
+            excludeFromSort,
+            id,
+        }: { name?: string; excludeFromSort?: boolean; id: VertexID }
     ) {
         this.value = value;
         this.name = name ?? 'Vertex';
@@ -27,34 +33,32 @@ class Vertex<T> {
         this.outEdges = new Set();
 
         this.excludeFromSort = excludeFromSort ?? false;
+        this.id = id;
     }
 }
 
 // TODO: Add transitive reduction to clean up graph edges
 // DirectedGraph represents a directed acyclic graph.
 export class DirectedGraph<T> {
-    // using a map to hash value to vertex
-    // TODO: can try to optimize by using number indexable object if the need arises
-    // TODO: hard reference to T, weakmap? need to maintain vertices if so with weakset?  test.
-    private _vertices: Map<T, Vertex<T>>;
+    private _vertices: Map<string | symbol, Vertex<T>>;
     private _topsort: T[];
     private _lastAddedVertex: Vertex<T> | null;
 
     constructor() {
-        this._vertices = new Map<T, Vertex<T>>();
+        this._vertices = new Map<string | symbol, Vertex<T>>();
         this._topsort = [];
 
         this._lastAddedVertex = null;
     }
 
-    // exists checks to see if a vertex exists for a given value
-    exists(value: T) {
-        const vertex = this._vertices.get(value);
+    // exists checks to see if a vertex exists for a given id
+    exists(id: string | symbol) {
+        const vertex = this._vertices.get(id);
 
         return vertex ? true : false;
     }
 
-    hasEdge(from: T, to: T) {
+    hasEdge(from: VertexID, to: VertexID) {
         const fromVertex = this._vertices.get(from);
         const toVertex = this._vertices.get(to);
 
@@ -65,14 +69,21 @@ export class DirectedGraph<T> {
         return fromVertex.outEdges.has(toVertex);
     }
 
-    // getVertex returns the vertex with the given value, or undefined if it does not exist.
-    getVertex(value: T) {
-        return this._vertices.get(value);
+    // getVertex returns the vertex with the given id, or undefined if it does not exist.
+    getVertex(id: VertexID) {
+        return this._vertices.get(id);
     }
 
     // addVertex adds a vertex to the graph.
-    addVertex(value: T, options: { name?: string; excludeFromSort?: boolean }) {
-        let existingVertex = this._vertices.get(value);
+    addVertex(
+        value: T,
+        options: {
+            name?: string;
+            excludeFromSort?: boolean;
+            id: VertexID;
+        }
+    ) {
+        let existingVertex = this._vertices.get(options.id);
 
         if (existingVertex) {
             // vertex already exists in graph
@@ -81,15 +92,15 @@ export class DirectedGraph<T> {
 
         let vertex = new Vertex(value, options);
 
-        this._vertices.set(value, vertex);
+        this._vertices.set(vertex.id, vertex);
 
         this._lastAddedVertex = vertex;
 
         return vertex;
     }
 
-    excludeFromSort(value: T, exclude: boolean) {
-        const vertex = this._vertices.get(value);
+    excludeFromSort(id: VertexID, exclude: boolean) {
+        const vertex = this._vertices.get(id);
 
         if (!vertex) {
             return;
@@ -98,8 +109,8 @@ export class DirectedGraph<T> {
         vertex.excludeFromSort = exclude;
     }
 
-    name(value: T, name: string) {
-        const vertex = this._vertices.get(value);
+    name(id: VertexID, name: string) {
+        const vertex = this._vertices.get(id);
 
         if (!vertex) {
             return;
@@ -108,9 +119,35 @@ export class DirectedGraph<T> {
         vertex.name = name;
     }
 
+    changeId(id: VertexID, newId: VertexID) {
+        const vertex = this._vertices.get(id);
+
+        if (!vertex) {
+            return;
+        }
+
+        if (this._vertices.has(newId)) {
+            throw new Error('New id already exists in graph');
+        }
+
+        vertex.id = newId;
+        this._vertices.set(newId, vertex);
+        this._vertices.delete(id);
+    }
+
+    value(id: VertexID, value: T) {
+        const vertex = this._vertices.get(id);
+
+        if (!vertex) {
+            return;
+        }
+
+        vertex.value = value;
+    }
+
     // removeVertex removes a vertex from the graph.
-    removeVertex(value: T) {
-        const vertexToRemove = this._vertices.get(value);
+    removeVertex(id: VertexID) {
+        const vertexToRemove = this._vertices.get(id);
 
         if (!vertexToRemove) {
             // vertex does not exist in graph
@@ -136,13 +173,13 @@ export class DirectedGraph<T> {
         }
 
         // remove vertex
-        this._vertices.delete(value);
+        this._vertices.delete(id);
     }
 
     // addVertexToEndOfGraph adds a vertex to the graph and adds an edge to the last added vertex
     addVertexToEndOfGraph(
         value: T,
-        options: { name?: string; excludeFromSort?: boolean }
+        options: { name?: string; excludeFromSort?: boolean; id: VertexID }
     ) {
         let lastVertex = this._lastAddedVertex;
         let newVertex = this.addVertex(value, options);
@@ -153,11 +190,11 @@ export class DirectedGraph<T> {
             return;
         }
 
-        this.addEdge(lastVertex.value, newVertex.value);
+        this.addEdge(lastVertex.id, newVertex.id);
     }
 
     // addEdge adds an edge between two vertices.
-    addEdge(from: T, to: T) {
+    addEdge(from: VertexID, to: VertexID) {
         const fromVertex = this._vertices.get(from);
         const toVertex = this._vertices.get(to);
 
@@ -180,7 +217,7 @@ export class DirectedGraph<T> {
     }
 
     // removeEdge removes an edge between two vertices.
-    removeEdge(from: T, to: T) {
+    removeEdge(from: VertexID, to: VertexID) {
         const fromVertex = this._vertices.get(from);
         const toVertex = this._vertices.get(to);
 
@@ -316,7 +353,7 @@ export class DirectedGraph<T> {
 
             // Remove all identified redundant edges.
             for (let toVertex of edgesToRemove) {
-                this.removeEdge(fromVertex.value, toVertex.value);
+                this.removeEdge(fromVertex.id, toVertex.id);
             }
         }
     }

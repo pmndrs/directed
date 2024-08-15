@@ -4,6 +4,7 @@ import type {
     Options,
     OptionsFn,
     Runnable,
+    RunnableID,
     Schedule,
     SingleOptionsFn,
     Tag,
@@ -20,7 +21,7 @@ function splitTagsAndRunnables<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
     ...ids: (symbol | string | Runnable<T>)[]
 ) {
-    let tags: Tag<T>[] = [];
+    let tags: Tag[] = [];
     let runnables: Runnable<T>[] = [];
 
     for (let i = 0; i < ids.length; i++) {
@@ -147,7 +148,7 @@ export function id<T extends Scheduler.Context = Scheduler.Context>(
             throw new Error('Id can only be applied to a runnable');
         }
 
-        if (schedule.symbols.has(id)) {
+        if (dag.exists(id) || schedule.symbols.has(id)) {
             throw new Error(
                 `Could not set id ${String(
                     id
@@ -155,11 +156,22 @@ export function id<T extends Scheduler.Context = Scheduler.Context>(
             );
         }
 
+        const anonymousId = schedule.anonymous.get(runnable);
+
+        if (!anonymousId) {
+            throw new Error(
+                `Could not set id ${String(
+                    id
+                )} because the runnable is not in the schedule`
+            );
+        }
+
         if (typeof id === 'string') {
-            dag.name(runnable, id);
+            dag.name(anonymousId, id);
         }
 
         schedule.symbols.set(id, runnable);
+        dag.changeId(anonymousId, id);
     };
 
     fn.__type = 'single';
@@ -188,8 +200,18 @@ export function tag<T extends Scheduler.Context = Scheduler.Context>(
             throw new Error(`Could not find tag with id ${String(id)}`);
         }
 
-        dag.addEdge(tag.before, runnable);
-        dag.addEdge(runnable, tag.after);
+        let runnableId: RunnableID | undefined = undefined;
+
+        const anonymousId = schedule.anonymous.get(runnable);
+
+        runnableId = anonymousId || symbolId;
+
+        if (!runnableId) {
+            throw new Error(`Could not find runnable to tag!`);
+        }
+
+        dag.addEdge(tag.before, runnableId);
+        dag.addEdge(runnableId, tag.after);
     };
 
     fn.__type = 'multi';
@@ -210,6 +232,7 @@ export function create<
         dag: new DirectedGraph<Runnable<T>>(),
         tags: new Map(),
         symbols: new Map(),
+        anonymous: new Map(),
     };
 
     return schedule;
@@ -227,7 +250,9 @@ export async function run<T extends Scheduler.Context = Scheduler.Context>(
 ) {
     for (let i = 0; i < schedule.dag.sorted.length; i++) {
         const runnable = schedule.dag.sorted[i];
+
         const result = runnable(context);
+
         if (result instanceof Promise) {
             await result;
         }
@@ -294,19 +319,21 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
 
     const name = typeof id === 'string' ? id : String(id);
 
-    schedule.dag.addVertex(before, {
+    const beforeVertex = schedule.dag.addVertex(before, {
         name: `${name}-before`,
         excludeFromSort: true,
+        id: Symbol(),
     });
 
-    schedule.dag.addVertex(after, {
+    const afterVertex = schedule.dag.addVertex(after, {
         name: `${name}-after`,
         excludeFromSort: true,
+        id: Symbol(),
     });
 
-    schedule.dag.addEdge(before, after);
+    schedule.dag.addEdge(beforeVertex.id, afterVertex.id);
 
-    const tag = { id, before, after };
+    const tag = { id, before: beforeVertex.id, after: afterVertex.id };
 
     const optionParams: Options<T> = {
         dag: schedule.dag,
@@ -352,12 +379,17 @@ export function add<
     }
 
     for (const r of runnables) {
-        if (schedule.dag.exists(r)) {
-            throw new Error('Runnable already exists in schedule');
-        }
+        // if (schedule.dag.exists(r)) {
+        //     throw new Error('Runnable already exists in schedule');
+        // }
 
         // add the runnable to the graph
-        schedule.dag.addVertex(r, {});
+        const vertex = schedule.dag.addVertex(r, {
+            id: Symbol(),
+        });
+
+        // vertex has default id, save it unless overridden by options
+        schedule.anonymous.set(r, vertex.id);
 
         const optionParams: Options<T> = {
             dag: schedule.dag,
@@ -381,9 +413,20 @@ export function add<
  */
 export function has<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
-    runnable: Runnable<T>
+    runnable: string | symbol | Runnable<T>
 ) {
-    return schedule.dag.exists(runnable);
+    if (typeof runnable === 'string' || typeof runnable === 'symbol') {
+        return schedule.dag.exists(runnable);
+    }
+
+    // anonymous runnable
+    const id = schedule.anonymous.get(runnable);
+
+    if (!id) {
+        return false;
+    }
+
+    return schedule.dag.exists(id);
 }
 
 /**
@@ -407,9 +450,21 @@ export function build<T extends Scheduler.Context = Scheduler.Context>(
  */
 export function remove<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
-    runnable: Runnable<T>
+    runnable: string | symbol | Runnable<T>
 ) {
-    schedule.dag.removeVertex(runnable);
+    if (typeof runnable === 'string' || typeof runnable === 'symbol') {
+        schedule.dag.removeVertex(runnable);
+        return;
+    }
+
+    // anonymous runnable
+    const id = schedule.anonymous.get(runnable);
+
+    if (!id) {
+        return;
+    }
+
+    schedule.dag.removeVertex(id);
 }
 
 /**
@@ -423,7 +478,8 @@ export function getRunnable<T extends Scheduler.Context = Scheduler.Context>(
     schedule: Schedule<T>,
     id: symbol | string
 ) {
-    return schedule.symbols.get(id);
+    const vertex = schedule.dag.getVertex(id);
+    return vertex?.value;
 }
 
 /**
@@ -439,6 +495,16 @@ export function getTag<T extends Scheduler.Context = Scheduler.Context>(
 ) {
     return schedule.tags.get(id);
 }
+
+export function disable<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {}
+
+export function enable<T extends Scheduler.Context = Scheduler.Context>(
+    schedule: Schedule<T>,
+    id: symbol | string
+) {}
 
 /**
  * Prints an ASCII visualization of the directed acyclic graph (DAG) in the given schedule.
