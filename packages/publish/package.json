@@ -1,0 +1,49 @@
+{
+	"name": "directed",
+	"version": "0.1.0",
+	"description": "📅 A flexible, minimal scheduler written in TypeScript",
+	"license": "MIT",
+	"type": "module",
+	"main": "./dist/index.cjs",
+	"module": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"exports": {
+		".": {
+			"types": {
+				"import": "./dist/index.d.ts",
+				"require": "./dist/index.d.cts"
+			},
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./react": {
+			"types": {
+				"import": "./dist/react.d.ts",
+				"require": "./dist/react.d.cts"
+			},
+			"import": "./dist/react.js",
+			"require": "./dist/react.cjs"
+		}
+	},
+	"files": [
+		"dist",
+		"react",
+		"README.md",
+		"LICENSE"
+	],
+	"scripts": {
+		"build": "tsup src/index.ts src/react.ts --format esm,cjs --dts --dts-resolve && tsx scripts/copy-readme.ts && tsx scripts/copy-react-files.ts",
+		"test": "vitest --environment=jsdom"
+	},
+	"devDependencies": {
+		"@directed/core": "workspace:*",
+		"@directed/react": "workspace:*",
+		"@types/react": "^18.3.3",
+		"react": "^18.3.1",
+		"tsup": "^8.3.0"
+	},
+	"peerDependencies": {
+		"@react-three/fiber": "^8.17.5",
+		"react": "^18.3.1"
+	}
+}
