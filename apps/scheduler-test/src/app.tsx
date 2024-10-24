@@ -2,9 +2,24 @@ import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './app.css';
+import { useRaf } from './use-raf';
+import { schedule } from './systems/schedule';
+import { useSchedule } from 'directed/react';
+
+const systemD = () => {
+    console.log('D');
+};
 
 function App() {
     const [count, setCount] = useState(0);
+
+    // Add system D to the schedule with a hook
+    useSchedule(schedule, systemD, { after: 'C' });
+
+    // Run the schedule on every RAF
+    useRaf(() => {
+        schedule.run({});
+    });
 
     return (
         <>
