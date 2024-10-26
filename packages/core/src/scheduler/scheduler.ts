@@ -188,7 +188,9 @@ export function id<T extends Scheduler.Context = Scheduler.Context>(
 export function tag<T extends Scheduler.Context = Scheduler.Context>(
     id: symbol | string
 ): MultiOptionsFn<T> {
-    const fn: MultiOptionsFn<T> = ({ schedule, runnable, dag }) => {
+    const fn: MultiOptionsFn<T> = (options) => {
+        const { schedule, runnable, dag } = options;
+
         if (!runnable) {
             throw new Error('Tag can only be applied to a runnable');
         }
@@ -212,6 +214,8 @@ export function tag<T extends Scheduler.Context = Scheduler.Context>(
 
         dag.addEdge(tag.before, runnableId);
         dag.addEdge(runnableId, tag.after);
+
+        return options;
     };
 
     fn.__type = 'multi';
@@ -335,7 +339,7 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
 
     const tag = { id, before: beforeVertex.id, after: afterVertex.id };
 
-    const optionParams: Options<T> = {
+    let optionParams: Options<T> = {
         dag: schedule.dag,
         tag,
         schedule,
@@ -343,7 +347,7 @@ export function createTag<T extends Scheduler.Context = Scheduler.Context>(
 
     // apply all options: tag, before, after
     for (const option of options) {
-        option(optionParams);
+        optionParams = option(optionParams);
     }
 
     schedule.tags.set(id, tag);
@@ -395,6 +399,7 @@ export function add<
             dag: schedule.dag,
             runnable: r,
             schedule,
+            id: vertex.id,
         };
 
         // apply all options: tag, before, after

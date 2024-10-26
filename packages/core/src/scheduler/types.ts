@@ -26,6 +26,7 @@ export type Options<T extends Scheduler.Context = Scheduler.Context> = {
     dag: DirectedGraph<Runnable<T>>;
     runnable?: Runnable<T>;
     tag?: Tag;
+    id?: RunnableID;
 };
 
 export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> =
@@ -33,11 +34,11 @@ export type OptionsFn<T extends Scheduler.Context = Scheduler.Context> =
     | MultiOptionsFn<T>;
 
 export type SingleOptionsFn<T extends Scheduler.Context = Scheduler.Context> =
-    ((options: Options<T>) => void) & { __type: 'single' | 'multi' };
+    ((options: Options<T>) => Options<T>) & { __type: 'single' | 'multi' };
 
 export type MultiOptionsFn<T extends Scheduler.Context = Scheduler.Context> = ((
     options: Options<T>
-) => void) & { __type: 'multi' };
+) => Options<T>) & { __type: 'multi' };
 
 export type Tag = {
     id: TagID;
