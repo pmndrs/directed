@@ -1,6 +1,6 @@
 # Directed
 
-Directed is a flexible, minimal scheduler written in TypeScript. It is powered by a directed acyclic graph (DAG) allowing for dependency-based scheduling.
+📅 A flexible, minimal scheduler written in TypeScript. Directed is powered by a directed acyclic graph (DAG) allowing for dependency-based scheduling.
 
 ```
 npm install directed
