@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-		"send": "pnpm -F directed build && pnpm -F directed publish",
+		"ship": "pnpm -F directed build && pnpm -F directed publish",
 		"prepublish": "pnpm -F directed build",
 		"app": "pnpm -F scheduler-test dev"
 	},
