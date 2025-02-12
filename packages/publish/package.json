@@ -50,7 +50,7 @@
 		"@react-three/fiber": {
 			"optional": true
 		},
-		"three": {
+		"react": {
 			"optional": true
 		}
 	}
