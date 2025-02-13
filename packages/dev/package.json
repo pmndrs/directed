@@ -26,21 +26,23 @@
 		"LICENSE"
 	],
 	"scripts": {
-		"build": "tsup && tsx scripts/copy-readme.ts && tsx scripts/copy-react-files.ts",
 		"test": "vitest --environment=jsdom"
 	},
 	"devDependencies": {
 		"@directed/core": "workspace:*",
 		"@directed/react": "workspace:*",
-		"@types/react": "^18.3.3",
 		"react": "^18.3.1",
 		"tsup": "^8.3.0"
 	},
 	"peerDependencies": {
+		"@types/react": "^18.3.3",
 		"@react-three/fiber": "^8.17.5",
 		"react": "^18.3.1"
 	},
 	"peerDependenciesMeta": {
+		"@types/react": {
+			"optional": true
+		},
 		"@react-three/fiber": {
 			"optional": true
 		},
