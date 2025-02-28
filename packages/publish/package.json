@@ -1,6 +1,6 @@
 {
 	"name": "directed",
-	"version": "0.1.4",
+	"version": "0.1.5",
 	"description": "📅 A flexible, minimal scheduler written in TypeScript",
 	"license": "MIT",
 	"type": "module",
