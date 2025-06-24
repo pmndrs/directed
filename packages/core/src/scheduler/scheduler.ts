@@ -149,9 +149,7 @@ export function id<T extends Scheduler.Context = Scheduler.Context>(
 
         if (schedule.symbols.has(id)) {
             throw new Error(
-                `Could not set id ${String(
-                    id
-                )} because it already exists in the schedule`
+                `Could not set id ${String(id)} because it already exists in the schedule`
             );
         }
 
@@ -203,9 +201,7 @@ export function tag<T extends Scheduler.Context = Scheduler.Context>(
  *
  * @return The newly created Schedule object.
  */
-export function create<
-    T extends Scheduler.Context = Scheduler.Context
->(): Schedule<T> {
+export function create<T extends Scheduler.Context = Scheduler.Context>(): Schedule<T> {
     const schedule: Schedule<T> = {
         dag: new DirectedGraph<Runnable<T>>(),
         tags: new Map(),
@@ -339,9 +335,7 @@ export function add<
 >(
     schedule: Schedule<T>,
     runnable: R,
-    ...options: R extends Runnable<T>
-        ? SingleOptionsFn<T>[]
-        : MultiOptionsFn<T>[]
+    ...options: R extends Runnable<T> ? SingleOptionsFn<T>[] : MultiOptionsFn<T>[]
 ) {
     let runnables: Runnable<T>[] = [];
 
@@ -392,10 +386,8 @@ export function has<T extends Scheduler.Context = Scheduler.Context>(
  * @param schedule - The schedule to be built.
  * @return This function does not return anything.
  */
-export function build<T extends Scheduler.Context = Scheduler.Context>(
-    schedule: Schedule<T>
-) {
-    schedule.dag.topSort();
+export function build<T extends Scheduler.Context = Scheduler.Context>(schedule: Schedule<T>) {
+    schedule.dag.topologicalSort();
 }
 
 /**
@@ -446,8 +438,6 @@ export function getTag<T extends Scheduler.Context = Scheduler.Context>(
  * @param schedule - The schedule containing the DAG to visualize.
  * @return This function does not return anything.
  */
-export function debug<T extends Scheduler.Context = Scheduler.Context>(
-    schedule: Schedule<T>
-) {
+export function debug<T extends Scheduler.Context = Scheduler.Context>(schedule: Schedule<T>) {
     schedule.dag.asciiVisualize();
 }

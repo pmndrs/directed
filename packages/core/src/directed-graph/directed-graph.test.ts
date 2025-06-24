@@ -18,7 +18,7 @@ describe('DirectedGraph', () => {
 
         // console.log('A -> B -> C -> D -> E');
 
-        const sorted = graph.topSort();
+        const sorted = graph.topologicalSort();
 
         expect(sorted).toEqual(['A', 'B', 'C', 'D', 'E']);
     });
@@ -40,7 +40,7 @@ describe('DirectedGraph', () => {
 
         // console.log('A -> B -> C -> D -> E -> A');
 
-        expect(() => graph.topSort()).toThrow();
+        expect(() => graph.topologicalSort()).toThrow();
     });
 
     test('partial cycle throws an exception', () => {
@@ -60,7 +60,7 @@ describe('DirectedGraph', () => {
 
         // console.log('A -> B -> C -> D -> E -> C');
 
-        expect(() => graph.topSort()).toThrow();
+        expect(() => graph.topologicalSort()).toThrow();
     });
 
     test('graph with multiple dependencies', () => {
@@ -94,7 +94,7 @@ describe('DirectedGraph', () => {
          *
          */
 
-        const sorted = graph.topSort();
+        const sorted = graph.topologicalSort();
 
         // console.log('B -> C -> A -> D');
 
@@ -111,7 +111,7 @@ describe('DirectedGraph', () => {
         graph.addEdge('A', 'B');
         graph.addEdge('B', 'C');
 
-        const sorted = graph.topSort();
+        const sorted = graph.topologicalSort();
 
         expect(sorted).toEqual(['A', 'C']);
     });

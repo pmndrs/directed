@@ -16,10 +16,7 @@ class Vertex<T> {
         return this.inEdges.size;
     }
 
-    constructor(
-        value: T,
-        { name, excludeFromSort }: { name?: string; excludeFromSort?: boolean }
-    ) {
+    constructor(value: T, { name, excludeFromSort }: { name?: string; excludeFromSort?: boolean }) {
         this.value = value;
         this.name = name ?? 'Vertex';
 
@@ -36,27 +33,27 @@ export class DirectedGraph<T> {
     // using a map to hash value to vertex
     // TODO: can try to optimize by using number indexable object if the need arises
     // TODO: hard reference to T, weakmap? need to maintain vertices if so with weakset?  test.
-    private _vertices: Map<T, Vertex<T>>;
-    private _topsort: T[];
-    private _lastAddedVertex: Vertex<T> | null;
+    #vertices: Map<T, Vertex<T>>;
+    #topsort: T[];
+    #lastAddedVertex: Vertex<T> | null;
 
     constructor() {
-        this._vertices = new Map<T, Vertex<T>>();
-        this._topsort = [];
+        this.#vertices = new Map<T, Vertex<T>>();
+        this.#topsort = [];
 
-        this._lastAddedVertex = null;
+        this.#lastAddedVertex = null;
     }
 
     // exists checks to see if a vertex exists for a given value
     exists(value: T) {
-        const vertex = this._vertices.get(value);
+        const vertex = this.#vertices.get(value);
 
         return vertex ? true : false;
     }
 
     hasEdge(from: T, to: T) {
-        const fromVertex = this._vertices.get(from);
-        const toVertex = this._vertices.get(to);
+        const fromVertex = this.#vertices.get(from);
+        const toVertex = this.#vertices.get(to);
 
         if (!fromVertex || !toVertex) {
             return false;
@@ -67,12 +64,12 @@ export class DirectedGraph<T> {
 
     // getVertex returns the vertex with the given value, or undefined if it does not exist.
     getVertex(value: T) {
-        return this._vertices.get(value);
+        return this.#vertices.get(value);
     }
 
     // addVertex adds a vertex to the graph.
-    addVertex(value: T, options: { name?: string; excludeFromSort?: boolean }) {
-        let existingVertex = this._vertices.get(value);
+    addVertex(value: T, options: { name?: string; excludeFromSort?: boolean } = {}) {
+        let existingVertex = this.#vertices.get(value);
 
         if (existingVertex) {
             // vertex already exists in graph
@@ -81,15 +78,15 @@ export class DirectedGraph<T> {
 
         let vertex = new Vertex(value, options);
 
-        this._vertices.set(value, vertex);
+        this.#vertices.set(value, vertex);
 
-        this._lastAddedVertex = vertex;
+        this.#lastAddedVertex = vertex;
 
         return vertex;
     }
 
     excludeFromSort(value: T, exclude: boolean) {
-        const vertex = this._vertices.get(value);
+        const vertex = this.#vertices.get(value);
 
         if (!vertex) {
             return;
@@ -99,7 +96,7 @@ export class DirectedGraph<T> {
     }
 
     name(value: T, name: string) {
-        const vertex = this._vertices.get(value);
+        const vertex = this.#vertices.get(value);
 
         if (!vertex) {
             return;
@@ -110,7 +107,7 @@ export class DirectedGraph<T> {
 
     // removeVertex removes a vertex from the graph.
     removeVertex(value: T) {
-        const vertexToRemove = this._vertices.get(value);
+        const vertexToRemove = this.#vertices.get(value);
 
         if (!vertexToRemove) {
             // vertex does not exist in graph
@@ -136,18 +133,15 @@ export class DirectedGraph<T> {
         }
 
         // remove vertex
-        this._vertices.delete(value);
+        this.#vertices.delete(value);
     }
 
     // addVertexToEndOfGraph adds a vertex to the graph and adds an edge to the last added vertex
-    addVertexToEndOfGraph(
-        value: T,
-        options: { name?: string; excludeFromSort?: boolean }
-    ) {
-        let lastVertex = this._lastAddedVertex;
+    addVertexToEndOfGraph(value: T, options: { name?: string; excludeFromSort?: boolean }) {
+        let lastVertex = this.#lastAddedVertex;
         let newVertex = this.addVertex(value, options);
 
-        this._lastAddedVertex = newVertex;
+        this.#lastAddedVertex = newVertex;
 
         if (!lastVertex) {
             return;
@@ -158,8 +152,8 @@ export class DirectedGraph<T> {
 
     // addEdge adds an edge between two vertices.
     addEdge(from: T, to: T) {
-        const fromVertex = this._vertices.get(from);
-        const toVertex = this._vertices.get(to);
+        const fromVertex = this.#vertices.get(from);
+        const toVertex = this.#vertices.get(to);
 
         if (!fromVertex || !toVertex) {
             // from or to vertex does not exist in graph
@@ -167,10 +161,7 @@ export class DirectedGraph<T> {
             return;
         }
 
-        if (
-            fromVertex.outEdges.has(toVertex) &&
-            toVertex.inEdges.has(fromVertex)
-        ) {
+        if (fromVertex.outEdges.has(toVertex) && toVertex.inEdges.has(fromVertex)) {
             // edge already exists
             return;
         }
@@ -181,8 +172,8 @@ export class DirectedGraph<T> {
 
     // removeEdge removes an edge between two vertices.
     removeEdge(from: T, to: T) {
-        const fromVertex = this._vertices.get(from);
-        const toVertex = this._vertices.get(to);
+        const fromVertex = this.#vertices.get(from);
+        const toVertex = this.#vertices.get(to);
 
         if (!fromVertex || !toVertex) {
             // from or to vertex does not exist in graph
@@ -190,10 +181,7 @@ export class DirectedGraph<T> {
             return;
         }
 
-        if (
-            !fromVertex.outEdges.has(toVertex) &&
-            !toVertex.inEdges.has(fromVertex)
-        ) {
+        if (!fromVertex.outEdges.has(toVertex) && !toVertex.inEdges.has(fromVertex)) {
             // edge does not exist
             return;
         }
@@ -204,17 +192,17 @@ export class DirectedGraph<T> {
 
     // get sorted returns vertices in topological order
     get sorted() {
-        return this._topsort;
+        return this.#topsort;
     }
 
     // topSort returns the vertices in topological order using Kahn's algorithm
-    topSort() {
+    topologicalSort() {
         let inEdgeMap = new Map<Vertex<T>, number>();
         let queue = new Queue<Vertex<T>>();
 
-        this._topsort = [];
+        this.#topsort = [];
 
-        for (const vertex of this._vertices.values()) {
+        for (const vertex of this.#vertices.values()) {
             inEdgeMap.set(vertex, vertex.inEdgeCount);
 
             if (vertex.inEdgeCount === 0) {
@@ -224,15 +212,15 @@ export class DirectedGraph<T> {
 
         if (queue.size === 0) {
             // graph has no vertices.  this could indicate a cycle as no vertices with 0 in-edges were found
-            if (this._vertices.size !== 0) {
+            if (this.#vertices.size !== 0) {
                 throw new Error(
                     'No vertices with zero in-edges - Graph contains a cycle! Please check all depdencies and ensure that there are no circular dependencies.'
                 );
             }
 
             // topsort called on an empty grpah
-            this._topsort = [];
-            return this._topsort;
+            this.#topsort = [];
+            return this.#topsort;
         }
 
         let visited = new Set<Vertex<T>>();
@@ -245,7 +233,7 @@ export class DirectedGraph<T> {
             const count = inEdgeMap.get(nextVertex);
 
             if (count === 0 && !nextVertex.excludeFromSort) {
-                this._topsort.push(nextVertex.value);
+                this.#topsort.push(nextVertex.value);
             }
 
             for (const edge of nextVertex.outEdges) {
@@ -263,16 +251,16 @@ export class DirectedGraph<T> {
             }
         }
 
-        if (visited.size !== this._vertices.size) {
+        if (visited.size !== this.#vertices.size) {
             // graph has a cycle
             throw new Error(
                 'Graph contains a cycle! Please check all depedencies and ensure that there are no circular dependencies.'
             );
 
-            // return this._topsort;
+            // return this.#topsort;
         }
 
-        return this._topsort;
+        return this.#topsort;
     }
 
     // Helper function to check if there's a path from `from` to `to` without using the direct edge.
@@ -304,7 +292,7 @@ export class DirectedGraph<T> {
 
     transitiveReduction() {
         // Go through each vertex in the graph.
-        for (let fromVertex of this._vertices.values()) {
+        for (let fromVertex of this.#vertices.values()) {
             let edgesToRemove = [];
 
             // Check each outgoing edge.
@@ -322,7 +310,7 @@ export class DirectedGraph<T> {
     }
 
     asciiVisualize() {
-        for (let vertex of this._vertices.values()) {
+        for (let vertex of this.#vertices.values()) {
             let connections = Array.from(vertex.outEdges)
                 .map((v) => v.name)
                 .join(', ');

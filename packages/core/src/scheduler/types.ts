@@ -6,15 +6,15 @@ declare global {
     }
 }
 
-export type Runnable<T extends Scheduler.Context = Scheduler.Context> = (
-    context: T
-) => void | Promise<void>;
-
 export interface Schedule<T extends Scheduler.Context = Scheduler.Context> {
     dag: DirectedGraph<Runnable<T>>;
     tags: Map<symbol | string, Tag<T>>;
     symbols: Map<symbol | string, Runnable<T>>;
 }
+
+export type Runnable<T extends Scheduler.Context = Scheduler.Context> = (
+    context: T
+) => void | Promise<void>;
 
 export type Options<T extends Scheduler.Context = Scheduler.Context> = {
     schedule: Schedule<T>;

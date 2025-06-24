@@ -7,12 +7,10 @@ export interface Vertex<T> {
     get outEdgeCount(): number;
     get inEdgeCount(): number;
 }
+
 export interface DirectedGraph<T> {
-    addVertex(
-        value: T,
-        options: { name?: string; excludeFromSort?: boolean }
-    ): Vertex<T>;
-    topSort(): T[];
+    addVertex(value: T, options?: { name?: string; excludeFromSort?: boolean }): Vertex<T>;
+    topologicalSort(): T[];
     exists(value: T): boolean;
     hasEdge(from: T, to: T): boolean;
     addEdge(from: T, to: T): void;
@@ -21,10 +19,7 @@ export interface DirectedGraph<T> {
     removeVertex(value: T): void;
     removeEdge(from: T, to: T): void;
     getVertex(value: T): Vertex<T> | undefined;
-    addVertexToEndOfGraph(
-        value: T,
-        options: { name?: string; excludeFromSort?: boolean }
-    ): void;
+    addVertexToEndOfGraph(value: T, options: { name?: string; excludeFromSort?: boolean }): void;
     isPathWithoutDirectEdge(from: Vertex<T>, to: Vertex<T>): boolean;
     transitiveReduction(): void;
     asciiVisualize(): void;
