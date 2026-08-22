@@ -1,16 +1,16 @@
-import { AddOptions, Runnable, Schedule } from '@directed/core';
+import type { AddOptions, Runnable, Scheduler } from '@directed/core';
 import { useLayoutEffect } from 'react';
 
 export function useSchedule<Context = unknown>(
-  schedule: Schedule<Context>,
+  scheduler: Scheduler<Context>,
   runnable: Runnable<Context>,
   options?: AddOptions<Context>
 ) {
   useLayoutEffect(() => {
-    schedule.add(runnable, options);
+    scheduler.add(runnable, options);
 
     return () => {
-      schedule.remove(runnable);
+      scheduler.remove(runnable);
     };
-  }, [runnable, schedule]);
+  }, [runnable, scheduler]);
 }

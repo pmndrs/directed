@@ -9,33 +9,32 @@ npm install directed
 ## Quickstart
 
 ```js
-import { Schedule } from 'directed'
+import { Scheduler } from 'directed'
 
 const applyGravity = (state) => {}
 const moveBody = (state) => {}
 
-const schedule = new Schedule()
-schedule.add(moveBody)
-schedule.add(applyGravity, { before: moveBody })
+const scheduler = new Scheduler()
+scheduler.add(moveBody)
+scheduler.add(applyGravity, { before: moveBody })
 
-schedule.build() // Optional: run() builds automatically after changes
-schedule.run(state)
+scheduler.run(state)
 ```
 
 ### React
 
 ```js
-import { Schedule } from 'directed'
+import { Scheduler } from 'directed'
 import { useSchedule } from 'directed/react'
 
 const applyGravity = (state) => {}
 const moveBody = (state) => {}
 
-const schedule = new Schedule()
+const scheduler = new Scheduler()
 
-// You can create hook bound to your schedule.
+// You can create a hook bound to your scheduler.
 function useMySchedule(runnable, options) {
-  return useSchedule(schedule, runnable, options)
+  return useSchedule(scheduler, runnable, options)
 }
 
 function Foo({ children }) {
@@ -47,17 +46,17 @@ function Foo({ children }) {
 ```
 
 > [!TIP]
-> See the [Schedule tests](packages/core/tests/schedule.test.ts) for more usage examples until the API documentation is complete.
+> See the [Scheduler tests](packages/core/tests/scheduler.test.ts) for more usage examples until the API documentation is complete.
 
 ## Lifecycle
 
-> Declare → Build → Run
+> Declare. Run.
 
 Declare. Register runnables, tags, and dependencies. This is the mutable phase. All changes to the scheduler happen here.
 
-Build. Resolve the declared dependencies into a deterministic execution order. The resulting schedule is an immutable snapshot of the declared work.
+Build (optional). Resolve and validate the declared dependencies before execution. The resulting schedule is an immutable snapshot of the declared work.
 
-Run. Execute the built schedule once against a context. Runtime policy is applied as each runnable is executed.
+Run. Build deferred changes into a new canonical schedule when necessary, then execute it once against a context.
 
 ## What's the big deal?
 
@@ -67,27 +66,29 @@ One solution is to arrange updates by a priority number. But this quickly gets b
 
 The most flexible solution is to instead tell the scheduler the dependencies for each update and let it solve for the correct order for us. Any new insertions will respect the already defined dependencies.
 
-Dependencies can be declared before their targets. Directed resolves and validates the complete graph during `build()`, and `run()` automatically builds whenever the schedule has changed.
+Dependencies can be declared before their targets. Directed resolves and validates the complete graph when `build()` is called explicitly or when `run()` encounters deferred changes. An explicit build is useful when you want to validate and publish a new schedule before execution. A successful build atomically replaces `scheduler.schedule`. A failed build leaves the previous schedule unchanged.
 
 ```js
-schedule.add(B, { before: A, after: C })
-schedule.add(A)
-schedule.add(C)
+scheduler.add(B, { before: A, after: C })
+scheduler.add(A)
+scheduler.add(C)
+scheduler.run(state)
 // Executes with the order C -> B -> A
 ```
 
 Directed takes this a step further by allowing tags to be used as dependencies. This allows you to schedule without needing to know any of the internal functions.
 
 ```js
-schedule.createTag('render')
+scheduler.createTag('render')
 
-schedule.add(A, { tag: 'render' })
-schedule.add(B, { before: 'render' })
-schedule.add(C, { after: 'render' })
+scheduler.add(A, { tag: 'render' })
+scheduler.add(B, { before: 'render' })
+scheduler.add(C, { after: 'render' })
+scheduler.run(state)
 // Executes with the order B -> A -> C
 ```
 
 ## API
 
 > [!CAUTION]
-> Not quite done yet! The class API can be found in [Schedule](packages/core/src/schedule.ts).
+> Not quite done yet! The mutable API can be found in [Scheduler](packages/core/src/scheduler.ts), and the immutable artifact in [Schedule](packages/core/src/schedule.ts).
