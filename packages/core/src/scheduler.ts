@@ -7,7 +7,7 @@ import type {
   DependencyList,
   OrderingOptions,
   Runnable,
-  ScheduleId,
+  SchedulerId,
 } from './types';
 
 type Tag<Context> = {
@@ -21,7 +21,7 @@ type RunnableDefinition<Context> = {
 };
 
 type TagDefinition<Context> = {
-  id: ScheduleId;
+  id: SchedulerId;
   options?: OrderingOptions<Context>;
 };
 
@@ -33,11 +33,15 @@ type ResolvedDependencies<Context> = {
 type ScheduleEntry<Context> =
   { runnable: Runnable<Context>; tag?: never } | { runnable?: never; tag: Tag<Context> };
 
+/**
+ * The mutable handle work is declared into. Building a scheduler solves its
+ * constraints into an immutable `Schedule`, which `run` executes.
+ */
 export class Scheduler<Context = unknown> {
   #schedule = new Schedule<Context>();
   readonly #runnableDefinitions = new Map<Runnable<Context>, RunnableDefinition<Context>>();
-  readonly #tagDefinitions = new Map<ScheduleId, TagDefinition<Context>>();
-  readonly #runnables = new Map<ScheduleId, Runnable<Context>>();
+  readonly #tagDefinitions = new Map<SchedulerId, TagDefinition<Context>>();
+  readonly #runnables = new Map<SchedulerId, Runnable<Context>>();
   #dirty = false;
 
   get schedule(): Schedule<Context> {
@@ -80,7 +84,7 @@ export class Scheduler<Context = unknown> {
     return this.#runnableDefinitions.has(runnable);
   }
 
-  async run(context: Context): Promise<void> {
+  run(context: Context): void | Promise<void> {
     if (this.#dirty) {
       this.build();
     }
@@ -90,7 +94,7 @@ export class Scheduler<Context = unknown> {
 
   build(): Schedule<Context> {
     const dag = new DirectedGraph<Runnable<Context>>();
-    const tags = new Map<ScheduleId, Tag<Context>>();
+    const tags = new Map<SchedulerId, Tag<Context>>();
 
     for (const { id } of this.#tagDefinitions.values()) {
       const before: Runnable<Context> = () => {};
@@ -161,7 +165,7 @@ export class Scheduler<Context = unknown> {
     return this;
   }
 
-  createTag(id: ScheduleId, options?: OrderingOptions<Context>): this {
+  createTag(id: SchedulerId, options?: OrderingOptions<Context>): this {
     this.#assertIdAvailable(id);
     this.#tagDefinitions.set(id, {
       id,
@@ -171,7 +175,7 @@ export class Scheduler<Context = unknown> {
     return this;
   }
 
-  removeTag(id: ScheduleId): this {
+  removeTag(id: SchedulerId): this {
     if (this.#tagDefinitions.delete(id)) {
       this.#dirty = true;
     }
@@ -179,11 +183,11 @@ export class Scheduler<Context = unknown> {
     return this;
   }
 
-  hasTag(id: ScheduleId): boolean {
+  hasTag(id: SchedulerId): boolean {
     return this.#tagDefinitions.has(id);
   }
 
-  getRunnable(id: ScheduleId): Runnable<Context> | undefined {
+  getRunnable(id: SchedulerId): Runnable<Context> | undefined {
     return this.#runnables.get(id);
   }
 
@@ -201,7 +205,7 @@ export class Scheduler<Context = unknown> {
     }
   }
 
-  #assertIdAvailable(id: ScheduleId): void {
+  #assertIdAvailable(id: SchedulerId): void {
     if (this.#runnables.has(id) || this.#tagDefinitions.has(id)) {
       throw new Error(`ID ${String(id)} already exists in the schedule`);
     }
@@ -210,7 +214,7 @@ export class Scheduler<Context = unknown> {
   #resolveDependencies(
     dependencies: DependencyList<Context> | undefined,
     dag: DirectedGraph<Runnable<Context>>,
-    tags: Map<ScheduleId, Tag<Context>>
+    tags: Map<SchedulerId, Tag<Context>>
   ): ResolvedDependencies<Context> {
     const resolved: ResolvedDependencies<Context> = {
       tags: [],
@@ -234,7 +238,7 @@ export class Scheduler<Context = unknown> {
     dependency: Dependency<Context>,
     resolved: ResolvedDependencies<Context>,
     dag: DirectedGraph<Runnable<Context>>,
-    tags: Map<ScheduleId, Tag<Context>>
+    tags: Map<SchedulerId, Tag<Context>>
   ): void {
     if (typeof dependency === 'function') {
       if (!dag.exists(dependency)) {
@@ -263,8 +267,8 @@ export class Scheduler<Context = unknown> {
   }
 
   #resolveTags(
-    ids: ScheduleId | ScheduleId[] | undefined,
-    tags: Map<ScheduleId, Tag<Context>>
+    ids: SchedulerId | SchedulerId[] | undefined,
+    tags: Map<SchedulerId, Tag<Context>>
   ): Tag<Context>[] {
     if (ids === undefined) {
       return [];

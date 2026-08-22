@@ -25,7 +25,7 @@ scheduler.run(state)
 
 ```js
 import { Scheduler } from 'directed'
-import { useSchedule } from 'directed/react'
+import { useScheduler } from 'directed/react'
 
 const applyGravity = (state) => {}
 const moveBody = (state) => {}
@@ -33,13 +33,13 @@ const moveBody = (state) => {}
 const scheduler = new Scheduler()
 
 // You can create a hook bound to your scheduler.
-function useMySchedule(runnable, options) {
-  return useSchedule(scheduler, runnable, options)
+function useMyScheduler(runnable, options) {
+  return useScheduler(scheduler, runnable, options)
 }
 
 function Foo({ children }) {
-  useMySchedule(moveBody)
-  useMySchedule(applyGravity, { before: moveBody })
+  useMyScheduler(moveBody)
+  useMyScheduler(applyGravity, { before: moveBody })
 
   return children
 }
@@ -50,7 +50,7 @@ function Foo({ children }) {
 
 ## Lifecycle
 
-> Declare. Run.
+> Declare → Build → Run
 
 Declare. Register runnables, tags, and dependencies. This is the mutable phase. All changes to the scheduler happen here.
 

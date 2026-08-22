@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
-import { Scheduler } from '../src';
+import { Schedule, Scheduler } from '../src';
 
 describe('Scheduler', () => {
   let order: string[] = [];
@@ -431,7 +431,7 @@ describe('Scheduler', () => {
     expect(() => scheduler.build()).toThrow('Dependency missing does not exist');
     expect(scheduler.schedule).toBe(validSchedule);
 
-    await expect(scheduler.run({})).rejects.toThrow('Dependency missing does not exist');
+    expect(() => scheduler.run({})).toThrow('Dependency missing does not exist');
     expect(scheduler.schedule).toBe(validSchedule);
 
     await validSchedule.run({});
@@ -459,5 +459,27 @@ describe('Scheduler', () => {
     scheduler.add(bFn, { id: 'A' });
 
     expect(scheduler.getRunnable('A')).toBe(bFn);
+  });
+
+  test('exposes the solved order on the built schedule', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn, { id: 'A' });
+    scheduler.add(bFn, { id: 'B', before: 'A' });
+
+    const schedule = scheduler.build();
+
+    expect(schedule).toBeInstanceOf(Schedule);
+    expect(schedule.runnables).toEqual([bFn, aFn]);
+    expect(Object.isFrozen(schedule.runnables)).toBe(true);
+  });
+
+  test('runs synchronously when no runnable is async', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn);
+
+    expect(scheduler.run({})).toBeUndefined();
+    expect(order).toEqual(['A']);
   });
 });

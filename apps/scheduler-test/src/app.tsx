@@ -1,10 +1,10 @@
-import { useLayoutEffect, useState } from 'react';
+import { useState } from 'react';
 import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './app.css';
 import { useRaf } from './use-raf';
-import { scheduler } from './systems/schedule';
-import { useSchedule } from 'directed/react';
+import { scheduler } from './systems/scheduler';
+import { useScheduler } from 'directed/react';
 
 const systemD = () => {
   console.log('D');
@@ -13,12 +13,8 @@ const systemD = () => {
 function App() {
   const [count, setCount] = useState(0);
 
-  // Add system D to the schedule with a hook
-  useSchedule(scheduler, systemD, { after: 'C' });
-
-  useLayoutEffect(() => {
-    scheduler.build();
-  }, []);
+  // Add system D to the scheduler with a hook
+  useScheduler(scheduler, systemD, { after: 'C' });
 
   // Run the schedule on every RAF
   useRaf(() => {

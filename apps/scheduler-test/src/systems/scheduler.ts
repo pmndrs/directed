@@ -13,13 +13,10 @@ const systemC = () => {
   console.log('C');
 };
 
-// Create a mutable scheduler handle
+// Create a new scheduler
 export const scheduler = new Scheduler();
 
-// Add systems to the scheduler
+// Declare systems into the scheduler
 scheduler.add(systemA, { id: 'A' });
 scheduler.add(systemB, { id: 'B', after: 'A' });
 scheduler.add(systemC, { id: 'C', after: 'B' });
-
-// Publish the canonical immutable schedule
-scheduler.build();
