@@ -2,15 +2,15 @@ import { Schedule } from 'directed';
 
 // Define some mock systems
 const systemA = () => {
-    console.log('A');
+  console.log('A');
 };
 
 const systemB = () => {
-    console.log('B');
+  console.log('B');
 };
 
 const systemC = () => {
-    console.log('C');
+  console.log('C');
 };
 
 // Create a new schedule

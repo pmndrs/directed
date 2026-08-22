@@ -1,3 +1,9 @@
+pmOnFail: download
+
+allowBuilds:
+  '@swc/core': true
+  esbuild: true
 packages:
-  - "packages/*"
-  - "apps/*"
+  - '.config/*'
+  - 'packages/*'
+  - 'apps/*'

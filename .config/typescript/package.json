@@ -1,0 +1,11 @@
+{
+  "name": "@config/typescript",
+  "version": "0.1.0",
+  "private": true,
+  "files": [
+    "base.json",
+    "app.json",
+    "node.json",
+    "react.json"
+  ]
+}

@@ -4,20 +4,26 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-    "ship": "pnpm -F directed build && pnpm -F directed publish",
-    "prepublish": "pnpm -F directed build",
-    "app": "pnpm -F scheduler-test dev"
+    "app": "pnpm -F scheduler-test dev",
+    "dev": "pnpm --filter './apps/*' run dev",
+    "build": "pnpm -F directed build",
+    "release": "pnpm test && pnpm typecheck && pnpm build && pnpm -F directed publish",
+    "test": "pnpm -r --filter=!directed run test",
+    "typecheck": "pnpm -r --filter './packages/*' --filter '!./packages/publish' exec tsc --noEmit",
+    "lint": "oxlint .",
+    "format": "prettier --config .config/prettier/base.json --ignore-path .config/prettier/prettierignore --write ."
   },
-  "dependencies": {
-    "@types/node": "latest",
-    "tsx": "latest",
-    "typescript": "latest"
+  "packageManager": "pnpm@11.22.0",
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "oxlint": "^1.79.0",
+    "oxlint-tsgolint": "^7.0.2001",
+    "prettier": "^3.9.6",
+    "tsx": "4.22.4",
+    "typescript": "6.0.3"
   },
-  "packageManager": "pnpm@10.3.0",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@swc/core",
-      "esbuild"
-    ]
+  "engines": {
+    "pnpm": ">=11.0.0",
+    "node": ">=22.13"
   }
 }
