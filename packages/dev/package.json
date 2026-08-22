@@ -1,49 +1,46 @@
 {
-	"name": "@directed/dev",
-	"private": true,
-	"version": "0.1.0",
-	"description": "📅 A flexible, minimal scheduler written in TypeScript",
-	"license": "MIT",
-	"type": "module",
-	"main": "./src/index.ts",
-	"module": "./src/index.ts",
-	"types": "./src/index.ts",
-	"exports": {
-		".": {
-			"types": "./src/index.ts",
-			"import": "./src/index.ts",
-			"require": "./src/index.ts"
-		},
-		"./react": {
-			"types": "./src/react.ts",
-			"import": "./src/react.ts",
-			"require": "./src/react.ts"
-		}
-	},
-	"files": [
-		"dist",
-		"README.md",
-		"LICENSE"
-	],
-	"scripts": {
-		"test": "vitest --environment=jsdom"
-	},
-	"devDependencies": {
-		"@directed/core": "workspace:*",
-		"@directed/react": "workspace:*",
-		"react": ">=18.0.0",
-		"tsup": "^8.3.0"
-	},
-	"peerDependencies": {
-		"@types/react": ">=18.0.0",
-		"react": ">=18.0.0"
-	},
-	"peerDependenciesMeta": {
-		"@types/react": {
-			"optional": true
-		},
-		"react": {
-			"optional": true
-		}
-	}
+  "name": "@directed/dev",
+  "private": true,
+  "version": "0.1.0",
+  "description": "📅 A flexible, minimal scheduler written in TypeScript",
+  "license": "MIT",
+  "type": "module",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./src/index.ts",
+      "require": "./src/index.ts"
+    },
+    "./react": {
+      "types": "./src/react.ts",
+      "import": "./src/react.ts",
+      "require": "./src/react.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "devDependencies": {
+    "@directed/core": "workspace:*",
+    "@directed/react": "workspace:*",
+    "react": ">=18.0.0",
+    "tsup": "^8.3.0"
+  },
+  "peerDependencies": {
+    "@types/react": ">=18.0.0",
+    "react": ">=18.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/react": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  }
 }

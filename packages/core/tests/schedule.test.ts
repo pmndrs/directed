@@ -1,0 +1,396 @@
+import { beforeEach, describe, expect, test, vi } from 'vitest';
+import { Schedule } from '../src/schedule';
+
+describe('Schedule', () => {
+  let order: string[] = [];
+
+  const aFn = vi.fn(() => {
+    order.push('A');
+  });
+
+  const bFn = vi.fn(() => {
+    order.push('B');
+  });
+
+  const cFn = vi.fn(() => {
+    order.push('C');
+  });
+
+  const dFn = vi.fn(() => {
+    order.push('D');
+  });
+
+  const eFn = vi.fn(() => {
+    order.push('E');
+  });
+
+  const fFn = vi.fn(() => {
+    order.push('F');
+  });
+
+  beforeEach(() => {
+    order = [];
+
+    aFn.mockClear();
+    bFn.mockClear();
+    cFn.mockClear();
+    dFn.mockClear();
+    eFn.mockClear();
+    fFn.mockClear();
+  });
+
+  test('scheduler with a single runnable', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['A']);
+  });
+
+  test('schedule a runnable with before', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { id: 'B', before: 'A' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['B', 'A']);
+  });
+
+  test('schedule a runnable with after', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { id: 'B', after: 'A' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['A', 'B']);
+  });
+
+  test('schedule a runnable without an id', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn);
+    schedule.add(bFn, {
+      before: aFn,
+    });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['B', 'A']);
+  });
+
+  test('schedule a runnable after multiple runnables', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { id: 'B' });
+    schedule.add(cFn, { id: 'C', after: ['A', 'B'] });
+    schedule.add(dFn, { id: 'D', after: 'C' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+    expect(cFn).toBeCalledTimes(1);
+    expect(dFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['A', 'B', 'C', 'D']);
+  });
+
+  test('schedule a runnable with tag', () => {
+    const group1 = Symbol();
+    const schedule = new Schedule();
+
+    schedule.createTag(group1);
+
+    schedule.add(aFn, { id: 'A', tag: group1 });
+    schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['A', 'B']);
+  });
+
+  test('schedule multiple runnables at once with a single tag', () => {
+    const group1 = Symbol();
+    const schedule = new Schedule();
+
+    schedule.createTag(group1);
+
+    schedule.add([aFn, bFn, cFn], {
+      tag: group1,
+    });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+    expect(cFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['A', 'B', 'C']);
+  });
+
+  test('schedule multiple runnables in addition order', () => {
+    const schedule = new Schedule();
+
+    schedule.add(dFn);
+    schedule.add(aFn);
+    schedule.add(bFn);
+    schedule.add(cFn);
+    schedule.build();
+
+    schedule.run({});
+
+    expect(order).toEqual(['D', 'A', 'B', 'C']);
+  });
+
+  test('schedule a runnable before and after a tag', () => {
+    const group1 = Symbol();
+    const schedule = new Schedule();
+
+    schedule.createTag(group1);
+
+    schedule.add(aFn, { id: 'A', tag: group1 });
+    schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
+    schedule.add(cFn, { id: 'C', before: group1 });
+    schedule.add(dFn, { id: 'D', after: group1 });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+    expect(cFn).toBeCalledTimes(1);
+    expect(dFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['C', 'A', 'B', 'D']);
+  });
+
+  test('schedule a runnable into an existing tag', () => {
+    const group1 = Symbol();
+    const schedule = new Schedule();
+
+    schedule.createTag(group1);
+
+    schedule.add(aFn, { id: 'A', tag: group1 });
+    schedule.add(bFn, { id: 'B', after: 'A', tag: group1 });
+
+    schedule.add(cFn, { id: 'C', before: group1 });
+    schedule.add(dFn, { id: 'D', after: group1 });
+
+    schedule.add(eFn, { id: 'E', tag: group1 });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+    expect(cFn).toBeCalledTimes(1);
+    expect(dFn).toBeCalledTimes(1);
+    expect(eFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['C', 'A', 'E', 'B', 'D']);
+  });
+
+  test('schedule a tag before or after another tag', () => {
+    const group1 = Symbol();
+    const group2 = Symbol();
+    const group3 = Symbol();
+
+    const schedule = new Schedule();
+
+    schedule.createTag(group1);
+    schedule.createTag(group2, { before: group1 });
+    schedule.createTag(group3, { after: group1 });
+
+    schedule.add(aFn, { tag: group1, id: 'A' });
+    schedule.add(bFn, { tag: group2, id: 'B' });
+    schedule.add(cFn, { tag: group3, id: 'C' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(aFn).toBeCalledTimes(1);
+    expect(bFn).toBeCalledTimes(1);
+    expect(cFn).toBeCalledTimes(1);
+
+    expect(order).toEqual(['B', 'A', 'C']);
+  });
+
+  test('scheduling async runnables', async () => {
+    const schedule = new Schedule();
+
+    const aFn = async () => {
+      order.push('A');
+    };
+
+    const bFn = async () => {
+      // Don't resolve until the next tick
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          order.push('B');
+          resolve();
+        }, 100);
+      });
+    };
+
+    const cFn = () => {
+      order.push('C');
+    };
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { after: 'A', id: 'B' });
+    schedule.add(cFn, { after: 'B', id: 'C' });
+    schedule.build();
+
+    await schedule.run({});
+
+    expect(order).toEqual(['A', 'B', 'C']);
+  });
+
+  test('remove runnables from the schedule', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { id: 'B' });
+    schedule.add(cFn, { id: 'C' });
+    schedule.build();
+
+    schedule.run({});
+
+    expect(order).toEqual(['A', 'B', 'C']);
+
+    schedule.remove(bFn);
+    schedule.build();
+
+    order = [];
+    schedule.run({});
+
+    expect(order).toEqual(['A', 'C']);
+  });
+
+  test('can check if a runnable is in the schedule', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(bFn, { id: 'B' });
+    schedule.add(cFn, { id: 'C' });
+    schedule.build();
+
+    expect(schedule.has(aFn)).toBe(true);
+    expect(schedule.has(dFn)).toBe(false);
+  });
+
+  test('does not allow the same runnable to be added more than once', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn);
+
+    expect(() => schedule.add(aFn)).toThrow('Runnable already exists in schedule');
+  });
+
+  test('does not allow duplicate runnables in a group', () => {
+    const schedule = new Schedule();
+
+    expect(() => schedule.add([aFn, aFn])).toThrow('A runnable can only be added once');
+    expect(schedule.has(aFn)).toBe(false);
+  });
+
+  test('uses one unambiguous ID namespace', () => {
+    const schedule = new Schedule();
+
+    schedule.createTag('update');
+
+    expect(() => schedule.add(aFn, { id: 'update' })).toThrow(
+      'ID update already exists in the schedule'
+    );
+  });
+
+  test('resolves forward dependencies when the schedule is built', () => {
+    const schedule = new Schedule();
+
+    schedule.add(bFn, { id: 'B', before: 'A', after: 'C' });
+    schedule.add(aFn, { id: 'A' });
+    schedule.add(cFn, { id: 'C' });
+    schedule.build();
+    schedule.run({});
+
+    expect(order).toEqual(['C', 'B', 'A']);
+  });
+
+  test('validates unresolved dependencies when the schedule is built', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { after: 'missing' });
+
+    expect(() => schedule.build()).toThrow('Dependency missing does not exist');
+    expect(schedule.has(aFn)).toBe(true);
+  });
+
+  test('reports dependency cycles when the schedule is built', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A', after: 'B' });
+    schedule.add(bFn, { id: 'B', after: 'A' });
+
+    expect(() => schedule.build()).toThrow(/cycle/i);
+  });
+
+  test('automatically builds a dirty schedule before running it', async () => {
+    const schedule = new Schedule();
+
+    schedule.add(bFn, { after: 'A' });
+    schedule.add(aFn, { id: 'A' });
+
+    await schedule.run({});
+
+    expect(order).toEqual(['A', 'B']);
+  });
+
+  test('resolves tags that are declared after their runnables', async () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { tag: 'render' });
+    schedule.createTag('render');
+
+    await schedule.run({});
+
+    expect(order).toEqual(['A']);
+  });
+
+  test('unregisters a runnable ID when the runnable is removed', () => {
+    const schedule = new Schedule();
+
+    schedule.add(aFn, { id: 'A' });
+    schedule.remove(aFn);
+    schedule.add(bFn, { id: 'A' });
+
+    expect(schedule.getRunnable('A')).toBe(bFn);
+  });
+});

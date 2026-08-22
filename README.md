@@ -7,6 +7,7 @@ npm install directed
 ```
 
 ## Quickstart
+
 ```js
 import { Schedule } from 'directed'
 
@@ -22,6 +23,7 @@ schedule.run(state)
 ```
 
 ### React
+
 ```js
 import { Schedule } from 'directed'
 import { useSchedule } from 'directed/react'
@@ -33,19 +35,19 @@ const schedule = new Schedule()
 
 // You can create hook bound to your schedule.
 function useMySchedule(runnable, options) {
-    return useSchedule(schedule, runnable, options)
+  return useSchedule(schedule, runnable, options)
 }
 
 function Foo({ children }) {
-    useMySchedule(moveBody)
-    useMySchedule(applyGravity, { before: moveBody })
+  useMySchedule(moveBody)
+  useMySchedule(applyGravity, { before: moveBody })
 
-    return children
+  return children
 }
 ```
 
 > [!TIP]
-> See the [Schedule tests](packages/core/src/schedule.test.ts) for more usage examples until the API documentation is complete.
+> See the [Schedule tests](packages/core/tests/schedule.test.ts) for more usage examples until the API documentation is complete.
 
 ## Lifecycle
 
@@ -58,7 +60,8 @@ Build. Resolve the declared dependencies into a deterministic execution order. T
 Run. Execute the built schedule once against a context. Runtime policy is applied as each runnable is executed.
 
 ## What's the big deal?
-Scheduling update functions is simple when you have visibility of an entire static app, you just call them in the order required. The problem comes when the app scales and you no longer have full visibiilty, or if the app is dynamic and updates may or may not exist at any given time. You need to be confident that data is updated in the correct order at all times. 
+
+Scheduling update functions is simple when you have visibility of an entire static app, you just call them in the order required. The problem comes when the app scales and you no longer have full visibiilty, or if the app is dynamic and updates may or may not exist at any given time. You need to be confident that data is updated in the correct order at all times.
 
 One solution is to arrange updates by a priority number. But this quickly gets back to needing visibility of the entire app, and the problem only gets worse with external libraries. As web devs we all remember the z-index wars.
 
@@ -83,6 +86,7 @@ schedule.add(B, { before: 'render' })
 schedule.add(C, { after: 'render' })
 // Executes with the order B -> A -> C
 ```
+
 ## API
 
 > [!CAUTION]

@@ -5,7 +5,7 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "test": "vitest"
+    "test": "vitest --passWithNoTests"
   },
   "types": "src/index.ts",
   "main": "src/index.ts",
