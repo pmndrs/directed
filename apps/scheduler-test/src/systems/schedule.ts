@@ -1,4 +1,4 @@
-import { Schedule } from 'directed';
+import { Scheduler } from 'directed';
 
 // Define some mock systems
 const systemA = () => {
@@ -13,13 +13,13 @@ const systemC = () => {
   console.log('C');
 };
 
-// Create a new schedule
-export const schedule = new Schedule();
+// Create a mutable scheduler handle
+export const scheduler = new Scheduler();
 
-// Add systems to the schedule
-schedule.add(systemA, { id: 'A' });
-schedule.add(systemB, { id: 'B', after: 'A' });
-schedule.add(systemC, { id: 'C', after: 'B' });
+// Add systems to the scheduler
+scheduler.add(systemA, { id: 'A' });
+scheduler.add(systemB, { id: 'B', after: 'A' });
+scheduler.add(systemC, { id: 'C', after: 'B' });
 
-// Build the schedule
-schedule.build();
+// Publish the canonical immutable schedule
+scheduler.build();
