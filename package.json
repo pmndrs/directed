@@ -4,14 +4,20 @@
   "version": "0.0.1",
   "license": "MIT",
   "scripts": {
-		"ship": "pnpm -F directed build && pnpm -F directed publish",
-		"prepublish": "pnpm -F directed build",
-		"app": "pnpm -F scheduler-test dev"
-	},
+    "ship": "pnpm -F directed build && pnpm -F directed publish",
+    "prepublish": "pnpm -F directed build",
+    "app": "pnpm -F scheduler-test dev"
+  },
   "dependencies": {
     "@types/node": "latest",
     "tsx": "latest",
     "typescript": "latest"
   },
-  "packageManager": "pnpm@10.3.0"
+  "packageManager": "pnpm@10.3.0",
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild"
+    ]
+  }
 }
