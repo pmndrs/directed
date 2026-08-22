@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { Schedule } from './schedule';
 
-describe('Schedule Class', () => {
+describe('Schedule', () => {
     let order: string[] = [];
 
     const aFn = vi.fn(() => {
@@ -156,6 +156,20 @@ describe('Schedule Class', () => {
         expect(order).toEqual(['A', 'B', 'C']);
     });
 
+    test('schedule multiple runnables in addition order', () => {
+        const schedule = new Schedule();
+
+        schedule.add(dFn);
+        schedule.add(aFn);
+        schedule.add(bFn);
+        schedule.add(cFn);
+        schedule.build();
+
+        schedule.run({});
+
+        expect(order).toEqual(['D', 'A', 'B', 'C']);
+    });
+
     test('schedule a runnable before and after a tag', () => {
         const group1 = Symbol();
         const schedule = new Schedule();
@@ -291,5 +305,98 @@ describe('Schedule Class', () => {
 
         expect(schedule.has(aFn)).toBe(true);
         expect(schedule.has(dFn)).toBe(false);
+    });
+
+    test('does not allow the same runnable to be added more than once', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn);
+
+        expect(() => schedule.add(aFn)).toThrow(
+            'Runnable already exists in schedule'
+        );
+    });
+
+    test('does not allow duplicate runnables in a group', () => {
+        const schedule = new Schedule();
+
+        expect(() => schedule.add([aFn, aFn])).toThrow(
+            'A runnable can only be added once'
+        );
+        expect(schedule.has(aFn)).toBe(false);
+    });
+
+    test('uses one unambiguous ID namespace', () => {
+        const schedule = new Schedule();
+
+        schedule.createTag('update');
+
+        expect(() => schedule.add(aFn, { id: 'update' })).toThrow(
+            'ID update already exists in the schedule'
+        );
+    });
+
+    test('resolves forward dependencies when the schedule is built', () => {
+        const schedule = new Schedule();
+
+        schedule.add(bFn, { id: 'B', before: 'A', after: 'C' });
+        schedule.add(aFn, { id: 'A' });
+        schedule.add(cFn, { id: 'C' });
+        schedule.build();
+        schedule.run({});
+
+        expect(order).toEqual(['C', 'B', 'A']);
+    });
+
+    test('validates unresolved dependencies when the schedule is built', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { after: 'missing' });
+
+        expect(() => schedule.build()).toThrow(
+            'Dependency missing does not exist'
+        );
+        expect(schedule.has(aFn)).toBe(true);
+    });
+
+    test('reports dependency cycles when the schedule is built', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A', after: 'B' });
+        schedule.add(bFn, { id: 'B', after: 'A' });
+
+        expect(() => schedule.build()).toThrow(/cycle/i);
+    });
+
+    test('automatically builds a dirty schedule before running it', async () => {
+        const schedule = new Schedule();
+
+        schedule.add(bFn, { after: 'A' });
+        schedule.add(aFn, { id: 'A' });
+
+        await schedule.run({});
+
+        expect(order).toEqual(['A', 'B']);
+    });
+
+    test('resolves tags that are declared after their runnables', async () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { tag: 'render' });
+        schedule.createTag('render');
+
+        await schedule.run({});
+
+        expect(order).toEqual(['A']);
+    });
+
+    test('unregisters a runnable ID when the runnable is removed', () => {
+        const schedule = new Schedule();
+
+        schedule.add(aFn, { id: 'A' });
+        schedule.remove(aFn);
+        schedule.add(bFn, { id: 'A' });
+
+        expect(schedule.getRunnable('A')).toBe(bFn);
     });
 });

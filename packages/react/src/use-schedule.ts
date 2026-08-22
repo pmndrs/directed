@@ -1,21 +1,16 @@
-import { OptionsObject, Runnable, Schedule } from '@directed/core';
-import { useLayoutEffect, useMemo } from 'react';
+import { AddOptions, Runnable, Schedule } from '@directed/core';
+import { useLayoutEffect } from 'react';
 
-export function useSchedule<T extends Scheduler.Context = Scheduler.Context>(
-    schedule: Schedule<T>,
-    runnable: Runnable<T>,
-    options?: OptionsObject<T>
+export function useSchedule<Context = unknown>(
+    schedule: Schedule<Context>,
+    runnable: Runnable<Context>,
+    options?: AddOptions<Context>
 ) {
-    const scheduleMemo = useMemo(() => schedule, [schedule]);
-    const runnableMemo = useMemo(() => runnable, [runnable]);
-
     useLayoutEffect(() => {
-        scheduleMemo.add(runnableMemo, options);
-        scheduleMemo.build();
+        schedule.add(runnable, options);
 
         return () => {
-            scheduleMemo.remove(runnableMemo);
-            scheduleMemo.build();
+            schedule.remove(runnable);
         };
-    }, [runnableMemo, scheduleMemo]);
+    }, [runnable, schedule]);
 }
