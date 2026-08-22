@@ -2,14 +2,21 @@
   "name": "@directed/react",
   "private": true,
   "version": "0.0.1",
+  "description": "React bindings for Directed",
   "type": "module",
   "license": "MIT",
-  "scripts": {
-    "test": "vitest --passWithNoTests"
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    }
   },
-  "types": "src/index.ts",
-  "main": "src/index.ts",
-  "module": "src/index.ts",
+  "scripts": {
+    "test": "vitest --passWithNoTests",
+    "lint": "oxlint"
+  },
   "dependencies": {
     "@directed/core": "workspace:*"
   },
@@ -17,15 +24,10 @@
     "react": "^18.3.1"
   },
   "devDependencies": {
-    "@types/react": "npm:types-react@rc",
-    "@types/node": "^20.12.11",
-    "@vitejs/plugin-react": "^4.2.1",
-    "@vitejs/plugin-react-swc": "^3.5.0",
-    "typescript": "^5.2.2",
+    "@config/oxlint": "workspace:*",
+    "@config/typescript": "workspace:*",
+    "@types/react": "^18.3.1",
     "react": "^18.3.1",
-    "vite": "^5.2.0",
-    "vite-plugin-dts": "^3.9.1",
-    "vite-plugin-tsconfig-paths": "^1.4.1",
     "vitest": "^1.5.0"
   }
 }

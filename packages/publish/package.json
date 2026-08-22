@@ -3,26 +3,21 @@
   "version": "0.1.6",
   "description": "📅 A flexible, minimal scheduler written in TypeScript",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/pmndrs/directed"
+  },
   "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
-      "types": {
-        "import": "./dist/index.d.ts",
-        "require": "./dist/index.d.cts"
-      },
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+      "types": "./src/index.ts",
+      "import": "./src/index.ts"
     },
     "./react": {
-      "types": {
-        "import": "./dist/react.d.ts",
-        "require": "./dist/react.d.cts"
-      },
-      "import": "./dist/react.js",
-      "require": "./dist/react.cjs"
+      "types": "./src/react.ts",
+      "import": "./src/react.ts"
     }
   },
   "files": [
@@ -31,14 +26,32 @@
     "README.md",
     "LICENSE"
   ],
+  "publishConfig": {
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./dist/index.d.cts",
+        "import": "./dist/index.js",
+        "require": "./dist/index.cjs"
+      },
+      "./react": {
+        "types": "./dist/react.d.cts",
+        "import": "./dist/react.js",
+        "require": "./dist/react.cjs"
+      }
+    }
+  },
   "scripts": {
-    "build": "tsup && tsx scripts/copy-readme.ts && tsx scripts/copy-react-files.ts"
+    "build": "tsdown && node --no-warnings scripts/copy-readme.ts"
   },
   "devDependencies": {
+    "@config/typescript": "workspace:*",
     "@directed/core": "workspace:*",
     "@directed/react": "workspace:*",
     "react": ">=18.0.0",
-    "tsup": "^8.3.0"
+    "tsdown": "^0.22.14"
   },
   "peerDependencies": {
     "@types/react": ">=18.0.0",
