@@ -211,7 +211,7 @@ describe('Scheduler', () => {
     expect(order).toEqual(['C', 'A', 'E', 'B', 'D']);
   });
 
-  test('orders tags with createTag', () => {
+  test('orders tags into stages', () => {
     const group1 = Symbol();
     const group2 = Symbol();
     const group3 = Symbol();
@@ -221,8 +221,7 @@ describe('Scheduler', () => {
     scheduler.add(aFn, { tag: group1, id: 'A' });
     scheduler.add(bFn, { tag: group2, id: 'B' });
 
-    scheduler.createTag(group2, { before: group1 });
-    scheduler.createTag(group3, { after: group1 });
+    scheduler.createStages(group2, group1, group3);
 
     scheduler.add(cFn, { tag: group3, id: 'C' });
     scheduler.build();
@@ -469,5 +468,81 @@ describe('Scheduler', () => {
     scheduler.add(bFn, { tag: 'x' });
 
     expect(() => scheduler.build()).toThrow('ID x already exists in the schedule');
+  });
+
+  test('composes stage chains across calls', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createStages('input', 'physics');
+    scheduler.createStages('physics', 'render');
+
+    scheduler.add(aFn, { tag: 'render' });
+    scheduler.add(bFn, { tag: 'input' });
+    scheduler.add(cFn, { tag: 'physics' });
+
+    scheduler.run({});
+
+    expect(order).toEqual(['B', 'C', 'A']);
+  });
+
+  test('stage ordering binds members added later', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createStages('update', 'render');
+
+    scheduler.add(aFn, { tag: 'render' });
+    scheduler.run({});
+
+    order = [];
+    scheduler.add(bFn, { tag: 'update' });
+    scheduler.run({});
+
+    expect(order).toEqual(['B', 'A']);
+  });
+
+  test('declares an empty stage as an anchor', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createStages('checkpoint');
+
+    scheduler.add(aFn, { after: 'checkpoint' });
+    scheduler.add(bFn, { before: 'checkpoint' });
+
+    scheduler.run({});
+
+    expect(order).toEqual(['B', 'A']);
+    expect(scheduler.hasTag('checkpoint')).toBe(true);
+  });
+
+  test('reports contradictory stage chains as cycles', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createStages('a', 'b');
+    scheduler.createStages('b', 'a');
+
+    scheduler.add(aFn, { tag: 'a' });
+    scheduler.add(bFn, { tag: 'b' });
+
+    expect(() => scheduler.build()).toThrow(/cycle/i);
+  });
+
+  test('rejects a stage that collides with a runnable ID', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn, { id: 'update' });
+
+    expect(() => scheduler.createStages('update')).toThrow(
+      'ID update already exists in the schedule'
+    );
+  });
+
+  test('rejects a runnable ID that collides with a stage', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createStages('update');
+
+    expect(() => scheduler.add(aFn, { id: 'update' })).toThrow(
+      'ID update already exists in the schedule'
+    );
   });
 });

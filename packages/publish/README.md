@@ -72,6 +72,7 @@ Dependencies can be declared before their targets. Directed resolves and validat
 scheduler.add(B, { before: A, after: C })
 scheduler.add(A)
 scheduler.add(C)
+
 scheduler.run(state)
 // Executes with the order C -> B -> A
 ```
@@ -82,15 +83,29 @@ Directed takes this a step further by allowing tags to be used as dependencies. 
 scheduler.add(A, { tag: 'render' })
 scheduler.add(B, { before: 'render' })
 scheduler.add(C, { after: 'render' })
+
 scheduler.run(state)
 // Executes with the order B -> A -> C
 ```
 
-Tags are created implicitly when work is tagged. Use `createTag` when the tag itself needs ordering — its constraints apply to every member, including members added later:
+Tags are created implicitly when work is tagged. They carry no ordering of their own — members interleave freely by their own dependencies.
+
+## Stages
+
+When you want explicitly ordered groups — a Unity-style update loop — declare stages. A stage is a tag with a declared position in a chain, and its ordering binds every member, including members added later:
 
 ```js
-scheduler.createTag('render', { after: 'physics' })
+scheduler.createStages('input', 'update', 'render')
+
+scheduler.add(A, { tag: 'render' })
+scheduler.add(B, { tag: 'input' })
+scheduler.add(C, { tag: 'update' })
+
+scheduler.run(state)
+// Executes with the order B -> C -> A
 ```
+
+Chains compose across calls, so stages can be declared without visibility of the whole app. `createStages('physics', 'update')` slots physics before update, whoever declared update.
 
 ## API
 
