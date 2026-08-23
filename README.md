@@ -88,6 +88,27 @@ scheduler.run(state)
 // Executes with the order B -> A -> C
 ```
 
+Tags are created implicitly when work is tagged. They carry no ordering of their own and members interleave freely by their own dependencies.
+
+## Stages
+
+When you want explicitly ordered groups, like a Unity-style update loop, declare stages. A stage is a tag with declared ordering, using the same before and after options as work. Its ordering binds every member, including members added later.
+
+```js
+scheduler.createStage(['input', 'update', 'render'])
+
+scheduler.add(A, { tag: 'render' })
+scheduler.add(B, { tag: 'input' })
+scheduler.add(C, { tag: 'update' })
+
+scheduler.run(state)
+// Executes with the order B -> C -> A
+```
+
+An array declares a linear chain of stages. Options apply to the chain as a whole, so a chain can be inserted between existing stages.
+
+Stages can be declared without visibility of the whole app. `scheduler.createStage('physics', { before: 'update' })` slots physics before update, no matter who declared update.
+
 ## API
 
 > [!CAUTION]

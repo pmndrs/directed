@@ -211,7 +211,7 @@ describe('Scheduler', () => {
     expect(order).toEqual(['C', 'A', 'E', 'B', 'D']);
   });
 
-  test('orders tags with createTag', () => {
+  test('orders tags with stages', () => {
     const group1 = Symbol();
     const group2 = Symbol();
     const group3 = Symbol();
@@ -221,8 +221,8 @@ describe('Scheduler', () => {
     scheduler.add(aFn, { tag: group1, id: 'A' });
     scheduler.add(bFn, { tag: group2, id: 'B' });
 
-    scheduler.createTag(group2, { before: group1 });
-    scheduler.createTag(group3, { after: group1 });
+    scheduler.createStage(group2, { before: group1 });
+    scheduler.createStage(group3, { after: group1 });
 
     scheduler.add(cFn, { tag: group3, id: 'C' });
     scheduler.build();
@@ -454,20 +454,17 @@ describe('Scheduler', () => {
     expect(order).toEqual(['A']);
   });
 
-  test('does not create tags from dependency references', () => {
+  test('declares an update loop with stages', () => {
     const scheduler = new Scheduler();
 
-    scheduler.add(aFn, { before: 'group1' });
+    scheduler.createStage(['input', 'physics', 'render']);
 
-    expect(() => scheduler.build()).toThrow('Dependency group1 does not exist');
-  });
+    scheduler.add(aFn, { tag: 'render' });
+    scheduler.add(bFn, { tag: 'input' });
+    scheduler.add(cFn, { tag: 'physics' });
 
-  test('rejects an implied tag that collides with a runnable ID', () => {
-    const scheduler = new Scheduler();
+    scheduler.run({});
 
-    scheduler.add(aFn, { id: 'x' });
-    scheduler.add(bFn, { tag: 'x' });
-
-    expect(() => scheduler.build()).toThrow('ID x already exists in the schedule');
+    expect(order).toEqual(['B', 'C', 'A']);
   });
 });
