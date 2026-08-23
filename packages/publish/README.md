@@ -79,13 +79,17 @@ scheduler.run(state)
 Directed takes this a step further by allowing tags to be used as dependencies. This allows you to schedule without needing to know any of the internal functions.
 
 ```js
-scheduler.createTag('render')
-
 scheduler.add(A, { tag: 'render' })
 scheduler.add(B, { before: 'render' })
 scheduler.add(C, { after: 'render' })
 scheduler.run(state)
 // Executes with the order B -> A -> C
+```
+
+Tags are created implicitly when work is tagged. Use `createTag` when the tag itself needs ordering — its constraints apply to every member, including members added later:
+
+```js
+scheduler.createTag('render', { after: 'physics' })
 ```
 
 ## API

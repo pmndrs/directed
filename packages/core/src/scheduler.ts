@@ -95,8 +95,9 @@ export class Scheduler<Context = unknown> {
   build(): Schedule<Context> {
     const dag = new DirectedGraph<Runnable<Context>>();
     const tags = new Map<SchedulerId, Tag<Context>>();
+    const tagDefinitions = this.#collectTagDefinitions();
 
-    for (const { id } of this.#tagDefinitions.values()) {
+    for (const { id } of tagDefinitions.values()) {
       const before: Runnable<Context> = () => {};
       const after: Runnable<Context> = () => {};
       const name = typeof id === 'string' ? id : String(id);
@@ -121,7 +122,7 @@ export class Scheduler<Context = unknown> {
       }
     }
 
-    for (const { id, options } of this.#tagDefinitions.values()) {
+    for (const { id, options } of tagDefinitions.values()) {
       const tag = tags.get(id)!;
       const before = this.#resolveDependencies(options?.before, dag, tags);
       const after = this.#resolveDependencies(options?.after, dag, tags);
@@ -184,7 +185,17 @@ export class Scheduler<Context = unknown> {
   }
 
   hasTag(id: SchedulerId): boolean {
-    return this.#tagDefinitions.has(id);
+    if (this.#tagDefinitions.has(id)) {
+      return true;
+    }
+
+    for (const { options } of this.#runnableDefinitions.values()) {
+      if (this.#membershipIds(options).includes(id)) {
+        return true;
+      }
+    }
+
+    return false;
   }
 
   getRunnable(id: SchedulerId): Runnable<Context> | undefined {
@@ -203,6 +214,36 @@ export class Scheduler<Context = unknown> {
         throw new Error('Runnable already exists in schedule');
       }
     }
+  }
+
+  // Tags exist when declared with createTag or implied by membership. Only
+  // createTag can attach ordering; dependency references never create tags.
+  #collectTagDefinitions(): Map<SchedulerId, TagDefinition<Context>> {
+    const definitions = new Map(this.#tagDefinitions);
+
+    for (const { options } of this.#runnableDefinitions.values()) {
+      for (const id of this.#membershipIds(options)) {
+        if (definitions.has(id)) {
+          continue;
+        }
+
+        if (this.#runnables.has(id)) {
+          throw new Error(`ID ${String(id)} already exists in the schedule`);
+        }
+
+        definitions.set(id, { id });
+      }
+    }
+
+    return definitions;
+  }
+
+  #membershipIds(options?: AddOptions<Context>): SchedulerId[] {
+    if (options?.tag === undefined) {
+      return [];
+    }
+
+    return Array.isArray(options.tag) ? options.tag : [options.tag];
   }
 
   #assertIdAvailable(id: SchedulerId): void {

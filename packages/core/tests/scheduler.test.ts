@@ -482,4 +482,47 @@ describe('Scheduler', () => {
     expect(scheduler.run({})).toBeUndefined();
     expect(order).toEqual(['A']);
   });
+
+  test('creates tags implicitly from membership', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn, { tag: 'group1' });
+    scheduler.add(bFn, { tag: 'group2', before: 'group1' });
+    scheduler.add(cFn, { tag: 'group3', after: 'group1' });
+
+    scheduler.run({});
+
+    expect(order).toEqual(['B', 'A', 'C']);
+    expect(scheduler.hasTag('group1')).toBe(true);
+  });
+
+  test('does not create tags from dependency references', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn, { before: 'group1' });
+
+    expect(() => scheduler.build()).toThrow('Dependency group1 does not exist');
+  });
+
+  test('rejects an implied tag that collides with a runnable ID', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.add(aFn, { id: 'x' });
+    scheduler.add(bFn, { tag: 'x' });
+
+    expect(() => scheduler.build()).toThrow('ID x already exists in the schedule');
+  });
+
+  test('orders a declared tag against an implied tag', () => {
+    const scheduler = new Scheduler();
+
+    scheduler.createTag('group2', { before: 'group1' });
+
+    scheduler.add(aFn, { tag: 'group1' });
+    scheduler.add(bFn, { tag: 'group2' });
+
+    scheduler.run({});
+
+    expect(order).toEqual(['B', 'A']);
+  });
 });
