@@ -168,13 +168,30 @@ export class Scheduler<Context = unknown> {
   /**
    * Declares a stage. A stage is a tag with declared ordering: its before and
    * after constraints apply to every member, including members added later.
+   * An array declares a linear chain of stages, with the options applying to
+   * the chain as a whole.
    */
-  createStage(id: SchedulerId, options?: OrderingOptions<Context>): this {
-    this.#assertIdAvailable(id);
-    this.#stageDefinitions.set(id, {
-      id,
-      options: this.#copyOrderingOptions(options),
-    });
+  createStage(idOrIds: SchedulerId | SchedulerId[], options?: OrderingOptions<Context>): this {
+    const ids = Array.isArray(idOrIds) ? idOrIds : [idOrIds];
+
+    if (new Set(ids).size !== ids.length) {
+      throw new Error('A stage can only be created once');
+    }
+
+    for (const id of ids) {
+      this.#assertIdAvailable(id);
+    }
+
+    for (let i = 0; i < ids.length; i++) {
+      this.#stageDefinitions.set(ids[i], {
+        id: ids[i],
+        options: this.#copyOrderingOptions({
+          before: i === ids.length - 1 ? options?.before : undefined,
+          after: i === 0 ? options?.after : ids[i - 1],
+        }),
+      });
+    }
+
     this.#dirty = true;
     return this;
   }

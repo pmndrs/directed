@@ -457,9 +457,7 @@ describe('Scheduler', () => {
   test('declares an update loop with stages', () => {
     const scheduler = new Scheduler();
 
-    scheduler.createStage('input');
-    scheduler.createStage('physics', { after: 'input' });
-    scheduler.createStage('render', { after: 'physics' });
+    scheduler.createStage(['input', 'physics', 'render']);
 
     scheduler.add(aFn, { tag: 'render' });
     scheduler.add(bFn, { tag: 'input' });
