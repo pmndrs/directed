@@ -122,8 +122,6 @@ describe('Scheduler', () => {
     const group1 = Symbol();
     const scheduler = new Scheduler();
 
-    scheduler.createTag(group1);
-
     scheduler.add(aFn, { id: 'A', tag: group1 });
     scheduler.add(bFn, { id: 'B', after: 'A', tag: group1 });
     scheduler.build();
@@ -134,13 +132,12 @@ describe('Scheduler', () => {
     expect(bFn).toBeCalledTimes(1);
 
     expect(order).toEqual(['A', 'B']);
+    expect(scheduler.hasTag(group1)).toBe(true);
   });
 
   test('schedule multiple runnables at once with a single tag', () => {
     const group1 = Symbol();
     const scheduler = new Scheduler();
-
-    scheduler.createTag(group1);
 
     scheduler.add([aFn, bFn, cFn], {
       tag: group1,
@@ -174,8 +171,6 @@ describe('Scheduler', () => {
     const group1 = Symbol();
     const scheduler = new Scheduler();
 
-    scheduler.createTag(group1);
-
     scheduler.add(aFn, { id: 'A', tag: group1 });
     scheduler.add(bFn, { id: 'B', after: 'A', tag: group1 });
     scheduler.add(cFn, { id: 'C', before: group1 });
@@ -192,11 +187,9 @@ describe('Scheduler', () => {
     expect(order).toEqual(['C', 'A', 'B', 'D']);
   });
 
-  test('schedule a runnable into an existing tag', () => {
+  test('schedule another runnable into a tag', () => {
     const group1 = Symbol();
     const scheduler = new Scheduler();
-
-    scheduler.createTag(group1);
 
     scheduler.add(aFn, { id: 'A', tag: group1 });
     scheduler.add(bFn, { id: 'B', after: 'A', tag: group1 });
@@ -218,19 +211,19 @@ describe('Scheduler', () => {
     expect(order).toEqual(['C', 'A', 'E', 'B', 'D']);
   });
 
-  test('schedule a tag before or after another tag', () => {
+  test('orders tags with createTag', () => {
     const group1 = Symbol();
     const group2 = Symbol();
     const group3 = Symbol();
 
     const scheduler = new Scheduler();
 
-    scheduler.createTag(group1);
+    scheduler.add(aFn, { tag: group1, id: 'A' });
+    scheduler.add(bFn, { tag: group2, id: 'B' });
+
     scheduler.createTag(group2, { before: group1 });
     scheduler.createTag(group3, { after: group1 });
 
-    scheduler.add(aFn, { tag: group1, id: 'A' });
-    scheduler.add(bFn, { tag: group2, id: 'B' });
     scheduler.add(cFn, { tag: group3, id: 'C' });
     scheduler.build();
 
@@ -320,16 +313,6 @@ describe('Scheduler', () => {
 
     expect(() => scheduler.add([aFn, aFn])).toThrow('A runnable can only be added once');
     expect(scheduler.has(aFn)).toBe(false);
-  });
-
-  test('uses one unambiguous ID namespace', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createTag('update');
-
-    expect(() => scheduler.add(aFn, { id: 'update' })).toThrow(
-      'ID update already exists in the schedule'
-    );
   });
 
   test('resolves forward dependencies when the schedule is built', () => {
@@ -439,18 +422,6 @@ describe('Scheduler', () => {
     expect(order).toEqual(['A']);
   });
 
-  test('resolves tags that are declared after their runnables', async () => {
-    const scheduler = new Scheduler();
-
-    scheduler.add(aFn, { tag: 'render' });
-    scheduler.createTag('render');
-    scheduler.build();
-
-    await scheduler.run({});
-
-    expect(order).toEqual(['A']);
-  });
-
   test('unregisters a runnable ID when the runnable is removed', () => {
     const scheduler = new Scheduler();
 
@@ -483,19 +454,6 @@ describe('Scheduler', () => {
     expect(order).toEqual(['A']);
   });
 
-  test('creates tags implicitly from membership', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.add(aFn, { tag: 'group1' });
-    scheduler.add(bFn, { tag: 'group2', before: 'group1' });
-    scheduler.add(cFn, { tag: 'group3', after: 'group1' });
-
-    scheduler.run({});
-
-    expect(order).toEqual(['B', 'A', 'C']);
-    expect(scheduler.hasTag('group1')).toBe(true);
-  });
-
   test('does not create tags from dependency references', () => {
     const scheduler = new Scheduler();
 
@@ -511,18 +469,5 @@ describe('Scheduler', () => {
     scheduler.add(bFn, { tag: 'x' });
 
     expect(() => scheduler.build()).toThrow('ID x already exists in the schedule');
-  });
-
-  test('orders a declared tag against an implied tag', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createTag('group2', { before: 'group1' });
-
-    scheduler.add(aFn, { tag: 'group1' });
-    scheduler.add(bFn, { tag: 'group2' });
-
-    scheduler.run({});
-
-    expect(order).toEqual(['B', 'A']);
   });
 });
