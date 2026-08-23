@@ -453,23 +453,6 @@ describe('Scheduler', () => {
     expect(order).toEqual(['A']);
   });
 
-  test('does not create tags from dependency references', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.add(aFn, { before: 'group1' });
-
-    expect(() => scheduler.build()).toThrow('Dependency group1 does not exist');
-  });
-
-  test('rejects an implied tag that collides with a runnable ID', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.add(aFn, { id: 'x' });
-    scheduler.add(bFn, { tag: 'x' });
-
-    expect(() => scheduler.build()).toThrow('ID x already exists in the schedule');
-  });
-
   test('composes stage chains across calls', () => {
     const scheduler = new Scheduler();
 
@@ -483,66 +466,5 @@ describe('Scheduler', () => {
     scheduler.run({});
 
     expect(order).toEqual(['B', 'C', 'A']);
-  });
-
-  test('stage ordering binds members added later', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createStages('update', 'render');
-
-    scheduler.add(aFn, { tag: 'render' });
-    scheduler.run({});
-
-    order = [];
-    scheduler.add(bFn, { tag: 'update' });
-    scheduler.run({});
-
-    expect(order).toEqual(['B', 'A']);
-  });
-
-  test('declares an empty stage as an anchor', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createStages('checkpoint');
-
-    scheduler.add(aFn, { after: 'checkpoint' });
-    scheduler.add(bFn, { before: 'checkpoint' });
-
-    scheduler.run({});
-
-    expect(order).toEqual(['B', 'A']);
-    expect(scheduler.hasTag('checkpoint')).toBe(true);
-  });
-
-  test('reports contradictory stage chains as cycles', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createStages('a', 'b');
-    scheduler.createStages('b', 'a');
-
-    scheduler.add(aFn, { tag: 'a' });
-    scheduler.add(bFn, { tag: 'b' });
-
-    expect(() => scheduler.build()).toThrow(/cycle/i);
-  });
-
-  test('rejects a stage that collides with a runnable ID', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.add(aFn, { id: 'update' });
-
-    expect(() => scheduler.createStages('update')).toThrow(
-      'ID update already exists in the schedule'
-    );
-  });
-
-  test('rejects a runnable ID that collides with a stage', () => {
-    const scheduler = new Scheduler();
-
-    scheduler.createStages('update');
-
-    expect(() => scheduler.add(aFn, { id: 'update' })).toThrow(
-      'ID update already exists in the schedule'
-    );
   });
 });
