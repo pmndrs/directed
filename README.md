@@ -92,10 +92,12 @@ Tags are created implicitly when work is tagged. They carry no ordering of their
 
 ## Stages
 
-When you want explicitly ordered groups, like a Unity-style update loop, declare stages. A stage is a tag with a declared position in a chain. Its ordering binds every member, including members added later.
+When you want explicitly ordered groups, like a Unity-style update loop, declare stages. A stage is a tag with declared ordering, using the same before and after options as work. Its ordering binds every member, including members added later.
 
 ```js
-scheduler.createStages('input', 'update', 'render')
+scheduler.createStage('input')
+scheduler.createStage('update', { after: 'input' })
+scheduler.createStage('render', { after: 'update' })
 
 scheduler.add(A, { tag: 'render' })
 scheduler.add(B, { tag: 'input' })
@@ -105,7 +107,7 @@ scheduler.run(state)
 // Executes with the order B -> C -> A
 ```
 
-Chains compose across calls, so stages can be declared without visibility of the whole app. `createStages('physics', 'update')` slots physics before update, no matter who declared update.
+Stages can be declared without visibility of the whole app. `scheduler.createStage('physics', { before: 'update' })` slots physics before update, no matter who declared update.
 
 ## API
 

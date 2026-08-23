@@ -211,7 +211,7 @@ describe('Scheduler', () => {
     expect(order).toEqual(['C', 'A', 'E', 'B', 'D']);
   });
 
-  test('orders tags into stages', () => {
+  test('orders tags with stages', () => {
     const group1 = Symbol();
     const group2 = Symbol();
     const group3 = Symbol();
@@ -221,7 +221,8 @@ describe('Scheduler', () => {
     scheduler.add(aFn, { tag: group1, id: 'A' });
     scheduler.add(bFn, { tag: group2, id: 'B' });
 
-    scheduler.createStages(group2, group1, group3);
+    scheduler.createStage(group2, { before: group1 });
+    scheduler.createStage(group3, { after: group1 });
 
     scheduler.add(cFn, { tag: group3, id: 'C' });
     scheduler.build();
@@ -453,11 +454,12 @@ describe('Scheduler', () => {
     expect(order).toEqual(['A']);
   });
 
-  test('composes stage chains across calls', () => {
+  test('declares an update loop with stages', () => {
     const scheduler = new Scheduler();
 
-    scheduler.createStages('input', 'physics');
-    scheduler.createStages('physics', 'render');
+    scheduler.createStage('input');
+    scheduler.createStage('physics', { after: 'input' });
+    scheduler.createStage('render', { after: 'physics' });
 
     scheduler.add(aFn, { tag: 'render' });
     scheduler.add(bFn, { tag: 'input' });

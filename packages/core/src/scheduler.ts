@@ -20,15 +20,18 @@ type RunnableDefinition<Context> = {
   options?: AddOptions<Context>;
 };
 
-type StageDefinition = {
+type StageDefinition<Context> = {
   id: SchedulerId;
-  after: SchedulerId[];
+  options?: OrderingOptions<Context>;
 };
 
 type ResolvedDependencies<Context> = {
   tags: Tag<Context>[];
   runnables: Runnable<Context>[];
 };
+
+type ScheduleEntry<Context> =
+  { runnable: Runnable<Context>; stage?: never } | { runnable?: never; stage: Tag<Context> };
 
 /**
  * The mutable handle work is declared into. Building a scheduler solves its
@@ -37,7 +40,7 @@ type ResolvedDependencies<Context> = {
 export class Scheduler<Context = unknown> {
   #schedule = new Schedule<Context>();
   readonly #runnableDefinitions = new Map<Runnable<Context>, RunnableDefinition<Context>>();
-  readonly #stageDefinitions = new Map<SchedulerId, StageDefinition>();
+  readonly #stageDefinitions = new Map<SchedulerId, StageDefinition<Context>>();
   readonly #runnables = new Map<SchedulerId, Runnable<Context>>();
   #dirty = false;
 
@@ -118,12 +121,12 @@ export class Scheduler<Context = unknown> {
       }
     }
 
-    for (const { id, after } of this.#stageDefinitions.values()) {
+    for (const { id, options } of this.#stageDefinitions.values()) {
       const stage = tags.get(id)!;
+      const before = this.#resolveDependencies(options?.before, dag, tags);
+      const after = this.#resolveDependencies(options?.after, dag, tags);
 
-      for (const afterId of after) {
-        dag.addEdge(tags.get(afterId)!.after, stage.before);
-      }
+      this.#applyOrdering(dag, { stage }, before, after);
     }
 
     for (const { runnable, options } of this.#runnableDefinitions.values()) {
@@ -131,7 +134,7 @@ export class Scheduler<Context = unknown> {
       const after = this.#resolveDependencies(options?.after, dag, tags);
       const assignedTags = this.#resolveTags(options?.tag, tags);
 
-      this.#applyOrdering(dag, runnable, before, after);
+      this.#applyOrdering(dag, { runnable }, before, after);
 
       for (const tag of assignedTags) {
         dag.addEdge(tag.before, runnable);
@@ -163,29 +166,15 @@ export class Scheduler<Context = unknown> {
   }
 
   /**
-   * Declares an ordered chain of stages. A stage is a tag with a declared
-   * position: every member of a stage runs after every member of the stages
-   * before it, including members added later. Chains compose across calls,
-   * and a single-id chain declares an unordered anchor tag.
+   * Declares a stage. A stage is a tag with declared ordering: its before and
+   * after constraints apply to every member, including members added later.
    */
-  createStages(...ids: SchedulerId[]): this {
-    let previous: SchedulerId | undefined;
-
-    for (const id of ids) {
-      if (this.#runnables.has(id)) {
-        throw new Error(`ID ${String(id)} already exists in the schedule`);
-      }
-
-      const stage = this.#stageDefinitions.get(id) ?? { id, after: [] };
-
-      if (previous !== undefined && previous !== id && !stage.after.includes(previous)) {
-        stage.after.push(previous);
-      }
-
-      this.#stageDefinitions.set(id, stage);
-      previous = id;
-    }
-
+  createStage(id: SchedulerId, options?: OrderingOptions<Context>): this {
+    this.#assertIdAvailable(id);
+    this.#stageDefinitions.set(id, {
+      id,
+      options: this.#copyOrderingOptions(options),
+    });
     this.#dirty = true;
     return this;
   }
@@ -338,24 +327,27 @@ export class Scheduler<Context = unknown> {
 
   #applyOrdering(
     dag: DirectedGraph<Runnable<Context>>,
-    runnable: Runnable<Context>,
+    entry: ScheduleEntry<Context>,
     before: ResolvedDependencies<Context>,
     after: ResolvedDependencies<Context>
   ): void {
+    const entryStart = entry.runnable ?? entry.stage.before;
+    const entryEnd = entry.runnable ?? entry.stage.after;
+
     for (const tag of before.tags) {
-      dag.addEdge(runnable, tag.before);
+      dag.addEdge(entryEnd, tag.before);
     }
 
-    for (const other of before.runnables) {
-      dag.addEdge(runnable, other);
+    for (const runnable of before.runnables) {
+      dag.addEdge(entryEnd, runnable);
     }
 
     for (const tag of after.tags) {
-      dag.addEdge(tag.after, runnable);
+      dag.addEdge(tag.after, entryStart);
     }
 
-    for (const other of after.runnables) {
-      dag.addEdge(other, runnable);
+    for (const runnable of after.runnables) {
+      dag.addEdge(runnable, entryStart);
     }
   }
 
